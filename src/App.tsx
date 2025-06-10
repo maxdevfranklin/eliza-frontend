@@ -60,10 +60,16 @@ function App() {
 
     try {
       // ElizaOS backend runs on port 3000
-      const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/e2022ef6-fe40-0119-b38b-d701fc0c0e8d/message', {
+      // const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/e2022ef6-fe40-0119-b38b-d701fc0c0e8d/message', {
+      const response = await axios.post('http://localhost:3000/e2022ef6-fe40-0119-b38b-d701fc0c0e8d/message', {
         text: input,
         userId: "user",
         userName: "User"
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
       });
 
       const graceMessage: Message = {
