@@ -26,9 +26,13 @@ const theme = createTheme({
 });
 
 interface Message {
-  text: string;
-  sender: 'user' | 'grace';
-  timestamp: Date;
+  id: string;
+  agentId: string;
+  roomId: string;
+  userId: string;
+  content: {
+    text: string;
+  };
 }
 
 function App() {
@@ -36,6 +40,8 @@ function App() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const [agentName, setAgentName] = useState('Grace');
+  const [agentId, setAgentId] = useState('01c95267-dd29-02bc-a9ad-d243b05a8d51'); // Set the default agent ID
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -45,43 +51,41 @@ function App() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMessage: Message = {
-      text: input,
-      sender: 'user',
-      timestamp: new Date(),
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        // Fetch history using the agent's UUID directly
+        const historyResponse = await fetch(`http://localhost:3000/${agentId}/history`);
+        if (!historyResponse.ok) {
+          throw new Error('Failed to fetch chat history');
+        }
+        const history = await historyResponse.json();
+        console.log("Received history:", history); // Debug log
+        setMessages(history);
+      } catch (error) {
+        console.error('Error loading chat history:', error);
+      }
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+    loadHistory();
+  }, [agentId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
 
     try {
-      // ElizaOS backend runs on port 3000
-      // const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/e2022ef6-fe40-0119-b38b-d701fc0c0e8d/message', {
-      const response = await axios.post('http://localhost:3000/Graace/message', {
+      setIsLoading(true);
+      const response = await axios.post(`http://localhost:3000/${agentId}/message`, {
         text: input,
-        userId: "user",
-        userName: "User"
+        userId: 'user',
+        userName: 'User'
       });
 
-      const graceMessage: Message = {
-        text: response.data[0].text,
-        sender: 'grace',
-        timestamp: new Date(),
-      };
-
-      setMessages(prev => [...prev, graceMessage]);
+      setMessages(prev => [...prev, ...response.data]);
+      setInput('');
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage: Message = {
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'grace',
-        timestamp: new Date(),
-      };
-      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -116,54 +120,57 @@ function App() {
               gap: 2
             }}
           >
-            {messages.map((message, index) => (
-              <Box
-                key={index}
-                sx={{
-                  display: 'flex',
-                  justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-                }}
-              >
-                <Paper
-                  elevation={1}
-                  sx={{
-                    p: 2,
-                    maxWidth: '70%',
-                    bgcolor: message.sender === 'user' ? 'primary.main' : 'white',
-                    color: message.sender === 'user' ? 'white' : 'text.primary',
-                  }}
-                >
-                  <Typography variant="body1">{message.text}</Typography>
-                  <Typography variant="caption" sx={{ opacity: 0.7 }}>
-                    {message.timestamp.toLocaleTimeString()}
-                  </Typography>
-                </Paper>
-              </Box>
-            ))}
-            <div ref={messagesEndRef} />
+            <div className="chat-container">
+              <div className="messages" ref={messagesEndRef}>
+                {messages.map((message, index) => (
+                  <Box
+                    key={index}
+                    sx={{
+                      display: 'flex',
+                      justifyContent: message.userId === 'user' ? 'flex-end' : 'flex-start',
+                      mb: 2
+                    }}
+                  >
+                    <Paper
+                      elevation={1}
+                      sx={{
+                        p: 2,
+                        maxWidth: '70%',
+                        bgcolor: message.userId === 'user' ? 'primary.main' : 'white',
+                        color: message.userId === 'user' ? 'white' : 'text.primary',
+                      }}
+                    >
+                      <Typography variant="body1">
+                        {message.content?.text}
+                      </Typography>
+                    </Paper>
+                  </Box>
+                ))}
+              </div>
+            </div>
           </Box>
 
           <Box sx={{ p: 2, bgcolor: 'background.paper' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+            <form onSubmit={handleSubmit} className="input-area">
               <TextField
                 fullWidth
                 variant="outlined"
                 placeholder="Type your message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                onKeyPress={(e) => e.key === 'Enter' && handleSubmit(e)}
                 disabled={isLoading}
               />
               <Button
                 variant="contained"
                 color="primary"
                 endIcon={<SendIcon />}
-                onClick={handleSend}
+                onClick={handleSubmit}
                 disabled={isLoading}
               >
                 Send
               </Button>
-            </Box>
+            </form>
           </Box>
         </Paper>
       </Container>
