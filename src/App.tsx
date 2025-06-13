@@ -16,45 +16,75 @@ import {
   IconButton,
   Fade,
   Slide,
-  useMediaQuery
+  useMediaQuery,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Divider,
+  Badge,
+  Card,
+  CardContent,
+  Grid
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
+import MenuIcon from '@mui/icons-material/Menu';
+import StyleIcon from '@mui/icons-material/Style';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PaletteIcon from '@mui/icons-material/Palette';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import StarIcon from '@mui/icons-material/Star';
+import AttachFileIcon from '@mui/icons-material/AttachFile';
+import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
+import MicIcon from '@mui/icons-material/Mic';
+import ImageIcon from '@mui/icons-material/Image';
 import axios from 'axios';
 
 const theme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: '#667eea',
-      light: '#764ba2',
-      dark: '#4c63d2',
+      main: '#ff6b9d',
+      light: '#ff8fab',
+      dark: '#e91e63',
     },
     secondary: {
-      main: '#f093fb',
-      light: '#f5576c',
-      dark: '#c471ed',
+      main: '#6c5ce7',
+      light: '#a29bfe',
+      dark: '#5f3dc4',
     },
     background: {
-      default: '#f8fafc',
+      default: '#fafafa',
       paper: '#ffffff',
     },
     text: {
-      primary: '#1a202c',
-      secondary: '#718096',
+      primary: '#2d3436',
+      secondary: '#636e72',
     },
   },
   typography: {
-    fontFamily: '"Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    h4: {
+      fontWeight: 700,
+      letterSpacing: '-0.02em',
+    },
     h5: {
       fontWeight: 600,
       letterSpacing: '-0.025em',
     },
+    h6: {
+      fontWeight: 600,
+      letterSpacing: '-0.01em',
+    },
     body1: {
       lineHeight: 1.6,
+      fontWeight: 400,
     },
     caption: {
       fontSize: '0.75rem',
@@ -62,7 +92,7 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 16,
+    borderRadius: 20,
   },
   components: {
     MuiButton: {
@@ -70,8 +100,14 @@ const theme = createTheme({
         root: {
           textTransform: 'none',
           fontWeight: 600,
-          borderRadius: 12,
-          padding: '10px 20px',
+          borderRadius: 25,
+          padding: '12px 24px',
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
+            transform: 'translateY(-2px)',
+          },
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         },
       },
     },
@@ -79,24 +115,24 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiOutlinedInput-root': {
-            borderRadius: 24,
-            backgroundColor: '#f7fafc',
+            borderRadius: 25,
+            backgroundColor: '#f8f9fa',
             border: 'none',
             '&:hover': {
-              backgroundColor: '#edf2f7',
+              backgroundColor: '#e9ecef',
             },
             '&.Mui-focused': {
               backgroundColor: '#ffffff',
-              boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
+              boxShadow: '0 0 0 3px rgba(255, 107, 157, 0.1)',
             },
             '& fieldset': {
-              border: '1px solid #e2e8f0',
+              border: '2px solid transparent',
             },
             '&:hover fieldset': {
-              border: '1px solid #cbd5e0',
+              border: '2px solid rgba(255, 107, 157, 0.2)',
             },
             '&.Mui-focused fieldset': {
-              border: '2px solid #667eea',
+              border: '2px solid #ff6b9d',
             },
           },
         },
@@ -135,10 +171,18 @@ const stepLabels = {
   visit_transition: 'Next Steps'
 };
 
+const sidebarItems = [
+  { icon: <StyleIcon />, text: 'Style Analysis', badge: '3' },
+  { icon: <TrendingUpIcon />, text: 'Trending Now', badge: null },
+  { icon: <PaletteIcon />, text: 'Color Palette', badge: null },
+  { icon: <ShoppingBagIcon />, text: 'Shopping List', badge: '12' },
+  { icon: <FavoriteIcon />, text: 'Favorites', badge: '8' },
+];
+
 function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      text: "Hello! I'm Grace, your personal fashion consultant. I'm here to help you discover your perfect style. Let's start by getting to know each other better. What brings you here today?",
+      text: "Hello! I'm Grace, your personal fashion consultant. I'm here to help you discover your perfect style and create looks that make you feel absolutely amazing. Let's start this exciting journey together! ✨",
       sender: 'grace',
       timestamp: new Date(),
     }
@@ -147,15 +191,14 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentStep, setCurrentStep] = useState<DialogStep>('situation_discovery');
   const [isTyping, setIsTyping] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Memoize scroll function to prevent unnecessary re-renders
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Only scroll when messages change, not on every render
   useEffect(() => {
     scrollToBottom();
   }, [messages.length, scrollToBottom]);
@@ -242,59 +285,50 @@ function App() {
         sx={{
           display: 'flex',
           justifyContent: message.sender === 'user' ? 'flex-end' : 'flex-start',
-          mb: 2,
+          mb: 3,
           alignItems: 'flex-end',
-          gap: 1,
+          gap: 2,
         }}
       >
         {message.sender === 'grace' && (
           <Avatar
             sx={{
-              width: 32,
-              height: 32,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              mb: 0.5,
+              width: 44,
+              height: 44,
+              background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
+              mb: 1,
+              boxShadow: '0 4px 20px rgba(255, 107, 157, 0.3)',
             }}
           >
-            <SmartToyIcon sx={{ fontSize: 18 }} />
+            <SmartToyIcon sx={{ fontSize: 22 }} />
           </Avatar>
         )}
         
-        <Box sx={{ maxWidth: '75%', minWidth: '120px' }}>
+        <Box sx={{ maxWidth: '70%', minWidth: '120px' }}>
           <Paper
             elevation={0}
             sx={{
-              p: 2,
+              p: 3,
               background: message.sender === 'user' 
-                ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                ? 'linear-gradient(135deg, #ff6b9d 0%, #ff8fab 100%)'
                 : '#ffffff',
               color: message.sender === 'user' ? 'white' : 'text.primary',
-              borderRadius: message.sender === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-              border: message.sender === 'grace' ? '1px solid #e2e8f0' : 'none',
+              borderRadius: message.sender === 'user' ? '25px 25px 8px 25px' : '25px 25px 25px 8px',
+              border: message.sender === 'grace' ? '1px solid #f1f3f4' : 'none',
               boxShadow: message.sender === 'user' 
-                ? '0 4px 20px rgba(102, 126, 234, 0.3)'
-                : '0 2px 10px rgba(0, 0, 0, 0.05)',
+                ? '0 8px 32px rgba(255, 107, 157, 0.3)'
+                : '0 4px 20px rgba(0, 0, 0, 0.08)',
               position: 'relative',
-              '&::before': message.sender === 'grace' ? {
-                content: '""',
-                position: 'absolute',
-                bottom: 0,
-                left: -8,
-                width: 0,
-                height: 0,
-                borderLeft: '8px solid transparent',
-                borderRight: '8px solid #ffffff',
-                borderTop: '8px solid #ffffff',
-                borderBottom: '8px solid transparent',
-              } : {},
+              backdropFilter: 'blur(10px)',
             }}
           >
             <Typography 
               variant="body1" 
               sx={{ 
-                fontSize: '0.95rem',
-                lineHeight: 1.5,
+                fontSize: '1rem',
+                lineHeight: 1.6,
                 wordBreak: 'break-word',
+                fontWeight: 400,
               }}
             >
               {message.text}
@@ -304,8 +338,9 @@ function App() {
               sx={{ 
                 opacity: 0.7,
                 display: 'block',
-                mt: 0.5,
-                fontSize: '0.7rem',
+                mt: 1,
+                fontSize: '0.75rem',
+                fontWeight: 500,
               }}
             >
               {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -316,13 +351,14 @@ function App() {
         {message.sender === 'user' && (
           <Avatar
             sx={{
-              width: 32,
-              height: 32,
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              mb: 0.5,
+              width: 44,
+              height: 44,
+              background: 'linear-gradient(135deg, #6c5ce7 0%, #a29bfe 100%)',
+              mb: 1,
+              boxShadow: '0 4px 20px rgba(108, 92, 231, 0.3)',
             }}
           >
-            <PersonIcon sx={{ fontSize: 18 }} />
+            <PersonIcon sx={{ fontSize: 22 }} />
           </Avatar>
         )}
       </Box>
@@ -335,54 +371,55 @@ function App() {
         sx={{
           display: 'flex',
           justifyContent: 'flex-start',
-          mb: 2,
+          mb: 3,
           alignItems: 'flex-end',
-          gap: 1,
+          gap: 2,
         }}
       >
         <Avatar
           sx={{
-            width: 32,
-            height: 32,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            mb: 0.5,
+            width: 44,
+            height: 44,
+            background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
+            mb: 1,
+            boxShadow: '0 4px 20px rgba(255, 107, 157, 0.3)',
           }}
         >
-          <SmartToyIcon sx={{ fontSize: 18 }} />
+          <SmartToyIcon sx={{ fontSize: 22 }} />
         </Avatar>
         
         <Paper
           elevation={0}
           sx={{
-            p: 2,
+            p: 3,
             background: '#ffffff',
-            borderRadius: '20px 20px 20px 4px',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)',
-            minWidth: '60px',
+            borderRadius: '25px 25px 25px 8px',
+            border: '1px solid #f1f3f4',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+            minWidth: '80px',
           }}
         >
-          <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <FiberManualRecordIcon 
               sx={{ 
-                fontSize: 8, 
-                color: '#cbd5e0',
+                fontSize: 10, 
+                color: '#ff6b9d',
                 animation: 'pulse 1.4s ease-in-out infinite',
                 animationDelay: '0s',
               }} 
             />
             <FiberManualRecordIcon 
               sx={{ 
-                fontSize: 8, 
-                color: '#cbd5e0',
+                fontSize: 10, 
+                color: '#ff6b9d',
                 animation: 'pulse 1.4s ease-in-out infinite',
                 animationDelay: '0.2s',
               }} 
             />
             <FiberManualRecordIcon 
               sx={{ 
-                fontSize: 8, 
-                color: '#cbd5e0',
+                fontSize: 10, 
+                color: '#ff6b9d',
                 animation: 'pulse 1.4s ease-in-out infinite',
                 animationDelay: '0.4s',
               }} 
@@ -393,197 +430,375 @@ function App() {
     </Fade>
   ));
 
+  const Sidebar = () => (
+    <Box
+      sx={{
+        width: 320,
+        height: '100%',
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
+        borderRight: '1px solid #e9ecef',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {/* Sidebar Header */}
+      <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
+          Fashion Studio
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#636e72' }}>
+          Your personal style journey
+        </Typography>
+      </Box>
+
+      {/* Navigation */}
+      <List sx={{ flex: 1, p: 2 }}>
+        {sidebarItems.map((item, index) => (
+          <ListItem
+            key={index}
+            sx={{
+              borderRadius: 2,
+              mb: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(255, 107, 157, 0.08)',
+                transform: 'translateX(4px)',
+              },
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+            }}
+          >
+            <ListItemIcon sx={{ color: '#ff6b9d', minWidth: 40 }}>
+              {item.icon}
+            </ListItemIcon>
+            <ListItemText 
+              primary={item.text}
+              primaryTypographyProps={{
+                fontWeight: 500,
+                fontSize: '0.95rem',
+              }}
+            />
+            {item.badge && (
+              <Chip
+                label={item.badge}
+                size="small"
+                sx={{
+                  backgroundColor: '#ff6b9d',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  height: 20,
+                }}
+              />
+            )}
+          </ListItem>
+        ))}
+      </List>
+
+      <Divider />
+
+      {/* Style Stats */}
+      <Box sx={{ p: 3 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#2d3436' }}>
+          Your Style Progress
+        </Typography>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff5f8' }}>
+              <StarIcon sx={{ color: '#ff6b9d', mb: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
+                4.8
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#636e72' }}>
+                Style Score
+              </Typography>
+            </Card>
+          </Grid>
+          <Grid item xs={6}>
+            <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#f0f0ff' }}>
+              <ShoppingBagIcon sx={{ color: '#6c5ce7', mb: 1 }} />
+              <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
+                23
+              </Typography>
+              <Typography variant="caption" sx={{ color: '#636e72' }}>
+                Outfits
+              </Typography>
+            </Card>
+          </Grid>
+        </Grid>
+      </Box>
+    </Box>
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Box
         sx={{
-          minHeight: '100vh',
+          height: '100vh',
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: isMobile ? 1 : 2,
+          overflow: 'hidden',
         }}
       >
-        <Container maxWidth="md" sx={{ height: isMobile ? '100vh' : '90vh' }}>
-          <Paper 
-            elevation={24}
+        {/* Sidebar for Desktop */}
+        {!isMobile && <Sidebar />}
+
+        {/* Mobile Drawer */}
+        <Drawer
+          anchor="left"
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            '& .MuiDrawer-paper': {
+              width: 320,
+            },
+          }}
+        >
+          <Sidebar />
+        </Drawer>
+
+        {/* Main Chat Area */}
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          {/* Header */}
+          <Box 
             sx={{ 
-              height: '100%', 
-              display: 'flex', 
-              flexDirection: 'column',
-              borderRadius: isMobile ? 0 : 3,
-              overflow: 'hidden',
-              backdropFilter: 'blur(20px)',
+              p: 3,
               background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
           >
-            {/* Header */}
-            <Box 
-              sx={{ 
-                p: 3,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                position: 'relative',
-                '&::after': {
-                  content: '""',
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: '1px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                }
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+              {isMobile && (
+                <IconButton 
+                  onClick={() => setSidebarOpen(true)}
+                  sx={{ color: '#2d3436' }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
+              
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                <Badge
+                  overlap="circular"
+                  anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                  badgeContent={
+                    <Box
+                      sx={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: '50%',
+                        backgroundColor: '#00b894',
+                        border: '2px solid white',
+                      }}
+                    />
+                  }
+                >
                   <Avatar
                     sx={{
-                      width: 48,
-                      height: 48,
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      backdropFilter: 'blur(10px)',
+                      width: 56,
+                      height: 56,
+                      background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
+                      boxShadow: '0 8px 32px rgba(255, 107, 157, 0.3)',
                     }}
                   >
-                    <SmartToyIcon />
+                    <SmartToyIcon sx={{ fontSize: 28 }} />
                   </Avatar>
-                  <Box>
-                    <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-                      Grace
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.85rem' }}>
-                      Fashion Consultant • Online
-                    </Typography>
-                  </Box>
+                </Badge>
+                
+                <Box>
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: '#2d3436', mb: 0.5 }}>
+                    Grace
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#636e72', fontSize: '0.9rem' }}>
+                    Fashion Consultant • Online
+                  </Typography>
                 </Box>
-                <IconButton sx={{ color: 'white' }}>
-                  <MoreVertIcon />
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Chip
+                label={`${Math.round(getStepProgress())}% Complete`}
+                sx={{
+                  background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                }}
+              />
+              <IconButton sx={{ color: '#636e72' }}>
+                <MoreVertIcon />
+              </IconButton>
+            </Box>
+          </Box>
+
+          {/* Progress Bar */}
+          <Box sx={{ px: 3, py: 2, background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(20px)' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#2d3436' }}>
+                {stepLabels[currentStep]}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#636e72' }}>
+                Step {dialogSteps.indexOf(currentStep) + 1} of {dialogSteps.length}
+              </Typography>
+            </Box>
+            <LinearProgress 
+              variant="determinate" 
+              value={getStepProgress()} 
+              sx={{ 
+                height: 8, 
+                borderRadius: 4,
+                bgcolor: 'rgba(255, 107, 157, 0.1)',
+                '& .MuiLinearProgress-bar': {
+                  borderRadius: 4,
+                  background: 'linear-gradient(90deg, #ff6b9d 0%, #6c5ce7 100%)',
+                }
+              }} 
+            />
+          </Box>
+
+          {/* Messages Area */}
+          <Box 
+            sx={{ 
+              flex: 1, 
+              overflow: 'auto', 
+              p: 4,
+              background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%)',
+              backdropFilter: 'blur(20px)',
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'transparent',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: 'rgba(255, 107, 157, 0.3)',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                background: 'rgba(255, 107, 157, 0.5)',
+              },
+            }}
+          >
+            {messages.map((message, index) => (
+              <MessageBubble key={`${message.timestamp.getTime()}-${index}`} message={message} index={index} />
+            ))}
+            {isTyping && <TypingIndicator />}
+            <div ref={messagesEndRef} />
+          </Box>
+
+          {/* Input Area */}
+          <Box 
+            sx={{ 
+              p: 3, 
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+          >
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton 
+                  size="small" 
+                  sx={{ 
+                    color: '#636e72',
+                    '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }
+                  }}
+                >
+                  <AttachFileIcon />
+                </IconButton>
+                <IconButton 
+                  size="small" 
+                  sx={{ 
+                    color: '#636e72',
+                    '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }
+                  }}
+                >
+                  <ImageIcon />
+                </IconButton>
+                <IconButton 
+                  size="small" 
+                  sx={{ 
+                    color: '#636e72',
+                    '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }
+                  }}
+                >
+                  <EmojiEmotionsIcon />
                 </IconButton>
               </Box>
-
-              {/* Progress Section */}
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                    {stepLabels[currentStep]}
-                  </Typography>
-                  <Chip
-                    label={`${Math.round(getStepProgress())}%`}
-                    size="small"
-                    sx={{
-                      background: 'rgba(255, 255, 255, 0.2)',
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '0.75rem',
-                    }}
-                  />
-                </Box>
-                <LinearProgress 
-                  variant="determinate" 
-                  value={getStepProgress()} 
+              
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Share your style thoughts..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={isLoading}
+                multiline
+                maxRows={4}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    minHeight: '56px',
+                    alignItems: 'flex-end',
+                    pb: 1.5,
+                    fontSize: '1rem',
+                  },
+                }}
+              />
+              
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton 
                   sx={{ 
-                    height: 6, 
-                    borderRadius: 3,
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    '& .MuiLinearProgress-bar': {
-                      borderRadius: 3,
-                      background: 'linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.8) 100%)',
-                    }
-                  }} 
-                />
-              </Box>
-            </Box>
-
-            {/* Messages Area */}
-            <Box 
-              sx={{ 
-                flex: 1, 
-                overflow: 'auto', 
-                p: 3,
-                background: '#f8fafc',
-                '&::-webkit-scrollbar': {
-                  width: '6px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'transparent',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: '#cbd5e0',
-                  borderRadius: '3px',
-                },
-                '&::-webkit-scrollbar-thumb:hover': {
-                  background: '#a0aec0',
-                },
-              }}
-            >
-              {messages.map((message, index) => (
-                <MessageBubble key={`${message.timestamp.getTime()}-${index}`} message={message} index={index} />
-              ))}
-              {isTyping && <TypingIndicator />}
-              <div ref={messagesEndRef} />
-            </Box>
-
-            {/* Input Area */}
-            <Box 
-              sx={{ 
-                p: 3, 
-                background: '#ffffff',
-                borderTop: '1px solid #e2e8f0',
-              }}
-            >
-              <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  placeholder="Type your message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={isLoading}
-                  multiline
-                  maxRows={4}
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      minHeight: '48px',
-                      alignItems: 'flex-end',
-                      pb: 1,
-                    },
+                    color: '#636e72',
+                    '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }
                   }}
-                />
+                >
+                  <MicIcon />
+                </IconButton>
                 <Button
                   variant="contained"
                   onClick={handleSend}
                   disabled={isLoading || !input.trim()}
                   sx={{
-                    minWidth: '48px',
-                    height: '48px',
+                    minWidth: '56px',
+                    height: '56px',
                     borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)',
+                    background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
+                    boxShadow: '0 8px 32px rgba(255, 107, 157, 0.3)',
                     '&:hover': {
-                      background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                      transform: 'translateY(-1px)',
-                      boxShadow: '0 6px 25px rgba(102, 126, 234, 0.4)',
+                      background: 'linear-gradient(135deg, #e91e63 0%, #5f3dc4 100%)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(255, 107, 157, 0.4)',
                     },
                     '&:disabled': {
-                      background: '#e2e8f0',
-                      color: '#a0aec0',
+                      background: '#e9ecef',
+                      color: '#adb5bd',
                     },
-                    transition: 'all 0.2s ease-in-out',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   <SendIcon />
                 </Button>
               </Box>
             </Box>
-          </Paper>
-        </Container>
+            
+            <Typography variant="caption" sx={{ color: '#636e72', textAlign: 'center', display: 'block' }}>
+              Grace is powered by AI and may make mistakes. Your style journey is unique! ✨
+            </Typography>
+          </Box>
+        </Box>
       </Box>
 
       <style>
         {`
+          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+          
           @keyframes pulse {
             0%, 70%, 100% {
               opacity: 0.4;
@@ -591,7 +806,7 @@ function App() {
             }
             35% {
               opacity: 1;
-              transform: scale(1.1);
+              transform: scale(1.2);
             }
           }
         `}
