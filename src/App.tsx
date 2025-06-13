@@ -780,7 +780,7 @@ function App() {
       {/* Sidebar Header */}
       <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
-          ElizaOS
+          Grand Villa Guide
         </Typography>
         <Typography variant="body2" sx={{ color: '#636e72' }}>
           Personal journey for your family
