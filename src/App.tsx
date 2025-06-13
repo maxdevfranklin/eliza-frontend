@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Box, 
   Container, 
@@ -150,21 +150,24 @@ function App() {
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const scrollToBottom = () => {
+  // Memoize scroll function to prevent unnecessary re-renders
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, []);
 
+  // Only scroll when messages change, not on every render
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages.length, scrollToBottom]);
 
-  const simulateTyping = () => {
+  const simulateTyping = useCallback(() => {
     setIsTyping(true);
-    setTimeout(() => setIsTyping(false), 1500);
-  };
+    const timer = setTimeout(() => setIsTyping(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
+  const handleSend = useCallback(async () => {
+    if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
       text: input,
@@ -173,13 +176,14 @@ function App() {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
     simulateTyping();
 
     try {
       const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
-        text: input,
+        text: currentInput,
         userId: "user",
         userName: "User"
       });
@@ -197,7 +201,7 @@ function App() {
         });
         
         const lastResponse = response.data[response.data.length - 1];
-        if (lastResponse.metadata?.stage && dialogSteps.includes(lastResponse.metadata.stage)) {
+        if (lastResponse?.metadata?.stage && dialogSteps.includes(lastResponse.metadata.stage)) {
           setCurrentStep(lastResponse.metadata.stage);
         }
       }, 1000);
@@ -218,14 +222,21 @@ function App() {
         setIsTyping(false);
       }, 1000);
     }
-  };
+  }, [input, isLoading, simulateTyping]);
 
-  const getStepProgress = () => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  }, [handleSend]);
+
+  const getStepProgress = useCallback(() => {
     const currentIndex = dialogSteps.indexOf(currentStep);
     return ((currentIndex + 1) / dialogSteps.length) * 100;
-  };
+  }, [currentStep]);
 
-  const MessageBubble = ({ message, index }: { message: Message; index: number }) => (
+  const MessageBubble = React.memo(({ message, index }: { message: Message; index: number }) => (
     <Slide direction={message.sender === 'user' ? 'left' : 'right'} in={true} timeout={300 + index * 100}>
       <Box
         sx={{
@@ -316,9 +327,9 @@ function App() {
         )}
       </Box>
     </Slide>
-  );
+  ));
 
-  const TypingIndicator = () => (
+  const TypingIndicator = React.memo(() => (
     <Fade in={isTyping}>
       <Box
         sx={{
@@ -380,7 +391,7 @@ function App() {
         </Paper>
       </Box>
     </Fade>
-  );
+  ));
 
   return (
     <ThemeProvider theme={theme}>
@@ -508,7 +519,7 @@ function App() {
               }}
             >
               {messages.map((message, index) => (
-                <MessageBubble key={index} message={message} index={index} />
+                <MessageBubble key={`${message.timestamp.getTime()}-${index}`} message={message} index={index} />
               ))}
               {isTyping && <TypingIndicator />}
               <div ref={messagesEndRef} />
@@ -529,7 +540,7 @@ function App() {
                   placeholder="Type your message..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  onKeyPress={handleKeyPress}
                   disabled={isLoading}
                   multiline
                   maxRows={4}
