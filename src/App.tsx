@@ -25,7 +25,14 @@ import {
   Badge,
   Card,
   CardContent,
-  Grid
+  Grid,
+  Stepper,
+  Step,
+  StepLabel,
+  StepContent,
+  Collapse,
+  Zoom,
+  Grow
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -43,6 +50,12 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import MicIcon from '@mui/icons-material/Mic';
 import ImageIcon from '@mui/icons-material/Image';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
+import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import axios from 'axios';
 
 const theme = createTheme({
@@ -171,6 +184,26 @@ const stepLabels = {
   visit_transition: 'Next Steps'
 };
 
+const stepDescriptions = {
+  trust_building: 'Creating a comfortable space for our conversation',
+  situation_discovery: 'Learning about your current style situation',
+  lifestyle_discovery: 'Exploring your daily life and preferences',
+  readiness_discovery: 'Understanding your motivation for change',
+  priorities_discovery: 'Identifying what matters most to you',
+  needs_matching: 'Finding perfect style solutions for you',
+  visit_transition: 'Planning your next fashion journey steps'
+};
+
+const stepIcons = {
+  trust_building: <FavoriteIcon />,
+  situation_discovery: <PersonIcon />,
+  lifestyle_discovery: <StyleIcon />,
+  readiness_discovery: <TrendingUpIcon />,
+  priorities_discovery: <StarIcon />,
+  needs_matching: <AutoAwesomeIcon />,
+  visit_transition: <TrendingFlatIcon />
+};
+
 const sidebarItems = [
   { icon: <StyleIcon />, text: 'Style Analysis', badge: '3' },
   { icon: <TrendingUpIcon />, text: 'Trending Now', badge: null },
@@ -190,9 +223,11 @@ function App() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState<DialogStep>('situation_discovery');
+  const [currentStep, setCurrentStep] = useState<DialogStep>('trust_building');
+  const [completedSteps, setCompletedSteps] = useState<DialogStep[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [stepNotification, setStepNotification] = useState<DialogStep | null>(null);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -207,6 +242,22 @@ function App() {
   const generateMessageId = () => {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   };
+
+  const handleStepProgress = useCallback((newStep: DialogStep) => {
+    if (newStep !== currentStep) {
+      // Mark current step as completed
+      if (!completedSteps.includes(currentStep)) {
+        setCompletedSteps(prev => [...prev, currentStep]);
+      }
+      
+      // Show notification for new step
+      setStepNotification(newStep);
+      setTimeout(() => setStepNotification(null), 4000);
+      
+      // Update current step
+      setCurrentStep(newStep);
+    }
+  }, [currentStep, completedSteps]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
@@ -251,7 +302,7 @@ function App() {
         // Update step if provided
         const lastResponse = response.data[response.data.length - 1];
         if (lastResponse?.metadata?.stage && dialogSteps.includes(lastResponse.metadata.stage)) {
-          setCurrentStep(lastResponse.metadata.stage);
+          handleStepProgress(lastResponse.metadata.stage);
         }
       } else {
         // Handle single response or error
@@ -279,7 +330,7 @@ function App() {
       setIsLoading(false);
       setIsTyping(false);
     }
-  }, [input, isLoading]);
+  }, [input, isLoading, handleStepProgress]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -290,8 +341,9 @@ function App() {
 
   const getStepProgress = useCallback(() => {
     const currentIndex = dialogSteps.indexOf(currentStep);
-    return ((currentIndex + 1) / dialogSteps.length) * 100;
-  }, [currentStep]);
+    const completedCount = completedSteps.length;
+    return ((completedCount + (currentIndex >= 0 ? 0.5 : 0)) / dialogSteps.length) * 100;
+  }, [currentStep, completedSteps]);
 
   // Removed animations and memoized properly
   const MessageBubble = React.memo(({ message }: { message: Message }) => (
@@ -442,6 +494,249 @@ function App() {
       </Box>
     </Fade>
   ));
+
+  const StepProgressPanel = () => (
+    <Box
+      sx={{
+        width: 380,
+        height: '100%',
+        background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
+        borderLeft: '1px solid #e9ecef',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Step Progress Header */}
+      <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
+        <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
+          Style Journey
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#636e72', mb: 2 }}>
+          Your personalized fashion discovery
+        </Typography>
+        <LinearProgress 
+          variant="determinate" 
+          value={getStepProgress()} 
+          sx={{ 
+            height: 8, 
+            borderRadius: 4,
+            bgcolor: 'rgba(255, 107, 157, 0.1)',
+            '& .MuiLinearProgress-bar': {
+              borderRadius: 4,
+              background: 'linear-gradient(90deg, #ff6b9d 0%, #6c5ce7 100%)',
+            }
+          }} 
+        />
+        <Typography variant="caption" sx={{ color: '#636e72', mt: 1, display: 'block' }}>
+          {Math.round(getStepProgress())}% Complete
+        </Typography>
+      </Box>
+
+      {/* Steps List */}
+      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+        {dialogSteps.map((step, index) => {
+          const isCompleted = completedSteps.includes(step);
+          const isCurrent = currentStep === step;
+          const isUpcoming = !isCompleted && !isCurrent;
+
+          return (
+            <Grow
+              key={step}
+              in={true}
+              timeout={300 + index * 100}
+            >
+              <Card
+                sx={{
+                  mb: 2,
+                  background: isCurrent 
+                    ? 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)'
+                    : isCompleted 
+                      ? 'linear-gradient(135deg, #00b894 0%, #00cec9 100%)'
+                      : '#ffffff',
+                  color: (isCurrent || isCompleted) ? 'white' : 'text.primary',
+                  border: isUpcoming ? '2px dashed #e9ecef' : 'none',
+                  boxShadow: (isCurrent || isCompleted) 
+                    ? '0 8px 32px rgba(255, 107, 157, 0.3)' 
+                    : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                  transform: isCurrent ? 'scale(1.02)' : 'scale(1)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  position: 'relative',
+                  overflow: 'visible',
+                  '&:hover': {
+                    transform: isCurrent ? 'scale(1.02)' : 'scale(1.01)',
+                    boxShadow: (isCurrent || isCompleted) 
+                      ? '0 12px 40px rgba(255, 107, 157, 0.4)' 
+                      : '0 4px 16px rgba(0, 0, 0, 0.1)',
+                  }
+                }}
+              >
+                {isCurrent && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: -2,
+                      left: -2,
+                      right: -2,
+                      bottom: -2,
+                      background: 'linear-gradient(45deg, #ff6b9d, #6c5ce7, #ff6b9d)',
+                      borderRadius: 3,
+                      zIndex: -1,
+                      animation: 'gradientShift 3s ease-in-out infinite',
+                    }}
+                  />
+                )}
+                
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                    <Box
+                      sx={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: '50%',
+                        background: (isCurrent || isCompleted) 
+                          ? 'rgba(255, 255, 255, 0.2)' 
+                          : 'rgba(255, 107, 157, 0.1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        backdropFilter: 'blur(10px)',
+                      }}
+                    >
+                      {isCompleted ? (
+                        <CheckCircleIcon sx={{ color: 'inherit', fontSize: 24 }} />
+                      ) : isCurrent ? (
+                        <Box sx={{ color: 'inherit' }}>{stepIcons[step]}</Box>
+                      ) : (
+                        <RadioButtonUncheckedIcon sx={{ color: '#636e72', fontSize: 24 }} />
+                      )}
+                    </Box>
+                    
+                    <Box sx={{ flex: 1 }}>
+                      <Typography 
+                        variant="h6" 
+                        sx={{ 
+                          fontWeight: 600, 
+                          fontSize: '1.1rem',
+                          mb: 0.5,
+                          color: 'inherit'
+                        }}
+                      >
+                        {stepLabels[step]}
+                      </Typography>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          opacity: 0.8,
+                          fontSize: '0.9rem',
+                          color: 'inherit'
+                        }}
+                      >
+                        {stepDescriptions[step]}
+                      </Typography>
+                    </Box>
+
+                    {isCurrent && (
+                      <Box
+                        sx={{
+                          width: 12,
+                          height: 12,
+                          borderRadius: '50%',
+                          background: 'rgba(255, 255, 255, 0.8)',
+                          animation: 'pulse 2s ease-in-out infinite',
+                        }}
+                      />
+                    )}
+                  </Box>
+
+                  {isCompleted && (
+                    <Chip
+                      label="Completed"
+                      size="small"
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        color: 'inherit',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                      }}
+                    />
+                  )}
+                  
+                  {isCurrent && (
+                    <Chip
+                      label="In Progress"
+                      size="small"
+                      sx={{
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        color: 'inherit',
+                        fontWeight: 600,
+                        fontSize: '0.75rem',
+                      }}
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            </Grow>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+
+  const StepNotification = () => (
+    <Zoom in={!!stepNotification} timeout={300}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 24,
+          right: 24,
+          zIndex: 1300,
+          maxWidth: 400,
+        }}
+      >
+        {stepNotification && (
+          <Card
+            sx={{
+              background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
+              color: 'white',
+              boxShadow: '0 12px 40px rgba(255, 107, 157, 0.4)',
+              backdropFilter: 'blur(20px)',
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backdropFilter: 'blur(10px)',
+                  }}
+                >
+                  {stepIcons[stepNotification]}
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                    New Step Unlocked!
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                    {stepLabels[stepNotification]}
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body2" sx={{ opacity: 0.8 }}>
+                {stepDescriptions[stepNotification]}
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+      </Box>
+    </Zoom>
+  );
 
   const Sidebar = () => (
     <Box
@@ -636,7 +931,7 @@ function App() {
 
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
               <Chip
-                label={`${Math.round(getStepProgress())}% Complete`}
+                label={stepLabels[currentStep]}
                 sx={{
                   background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
                   color: 'white',
@@ -648,31 +943,6 @@ function App() {
                 <MoreVertIcon />
               </IconButton>
             </Box>
-          </Box>
-
-          {/* Progress Bar */}
-          <Box sx={{ px: 3, py: 2, background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(20px)' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#2d3436' }}>
-                {stepLabels[currentStep]}
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#636e72' }}>
-                Step {dialogSteps.indexOf(currentStep) + 1} of {dialogSteps.length}
-              </Typography>
-            </Box>
-            <LinearProgress 
-              variant="determinate" 
-              value={getStepProgress()} 
-              sx={{ 
-                height: 8, 
-                borderRadius: 4,
-                bgcolor: 'rgba(255, 107, 157, 0.1)',
-                '& .MuiLinearProgress-bar': {
-                  borderRadius: 4,
-                  background: 'linear-gradient(90deg, #ff6b9d 0%, #6c5ce7 100%)',
-                }
-              }} 
-            />
           </Box>
 
           {/* Messages Area */}
@@ -714,7 +984,7 @@ function App() {
               borderTop: '1px solid rgba(255, 255, 255, 0.2)',
             }}
           >
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', mb: 2 }}>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
               <Box sx={{ display: 'flex', gap: 1 }}>
                 <IconButton 
                   size="small" 
@@ -800,12 +1070,14 @@ function App() {
                 </Button>
               </Box>
             </Box>
-            
-            <Typography variant="caption" sx={{ color: '#636e72', textAlign: 'center', display: 'block' }}>
-              Grace is powered by AI and may make mistakes. Your style journey is unique! ✨
-            </Typography>
           </Box>
         </Box>
+
+        {/* Step Progress Panel - Desktop Only */}
+        {!isMobile && <StepProgressPanel />}
+
+        {/* Step Notification */}
+        <StepNotification />
       </Box>
 
       <style>
@@ -820,6 +1092,15 @@ function App() {
             35% {
               opacity: 1;
               transform: scale(1.2);
+            }
+          }
+
+          @keyframes gradientShift {
+            0%, 100% {
+              background-position: 0% 50%;
+            }
+            50% {
+              background-position: 100% 50%;
             }
           }
         `}
