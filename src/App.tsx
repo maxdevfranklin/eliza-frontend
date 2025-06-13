@@ -32,7 +32,9 @@ import {
   StepContent,
   Collapse,
   Zoom,
-  Grow
+  Grow,
+  Alert,
+  AlertTitle
 } from '@mui/material';
 import type { GridProps } from '@mui/material/Grid';
 import SendIcon from '@mui/icons-material/Send';
@@ -57,6 +59,7 @@ import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
+import VideocamIcon from '@mui/icons-material/Videocam';
 import axios from 'axios';
 
 const theme = createTheme({
@@ -181,18 +184,18 @@ const stepLabels = {
   lifestyle_discovery: 'Your Lifestyle',
   readiness_discovery: 'Your Readiness',
   priorities_discovery: 'Your Priorities',
-  needs_matching: 'Finding Matches',
+  needs_matching: 'Needs Matching',
   visit_transition: 'Next Steps'
 };
 
 const stepDescriptions = {
-  trust_building: 'Creating a comfortable space for our conversation',
-  situation_discovery: 'Learning about your current style situation',
-  lifestyle_discovery: 'Exploring your daily life and preferences',
-  readiness_discovery: 'Understanding your motivation for change',
-  priorities_discovery: 'Identifying what matters most to you',
-  needs_matching: 'Finding perfect style solutions for you',
-  visit_transition: 'Planning your next fashion journey steps'
+  trust_building: 'Setting the tone & Earning trust',
+  situation_discovery: 'Unnderstanding youur situation & motivations',
+  lifestyle_discovery: 'Understanding the prospect lifestyle',
+  readiness_discovery: 'Gauging your awareness & Readiness',
+  priorities_discovery: 'Understanding priorities in a community',
+  needs_matching: 'Connecting priorities to community',
+  visit_transition: 'Transitioning to a visit'
 };
 
 const stepIcons = {
@@ -206,18 +209,18 @@ const stepIcons = {
 };
 
 const sidebarItems = [
-  { icon: <StyleIcon />, text: 'Style Analysis', badge: '3' },
-  { icon: <TrendingUpIcon />, text: 'Trending Now', badge: null },
-  { icon: <PaletteIcon />, text: 'Color Palette', badge: null },
-  { icon: <ShoppingBagIcon />, text: 'Shopping List', badge: '12' },
-  { icon: <FavoriteIcon />, text: 'Favorites', badge: '8' },
+  { icon: <VideocamIcon />, text: 'Video Conversation', badge: null },
+  { icon: <TrendingUpIcon />, text: 'User Insights', badge: '1' },
+  { icon: <PaletteIcon />, text: 'Theme Customization', badge: '3' },
+  { icon: <ShoppingBagIcon />, text: 'Plan Upgrades', badge: null },
+  { icon: <FavoriteIcon />, text: 'Saved Favorites', badge: '0' },
 ];
 
 function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'initial-message',
-      text: "Hello! I'm Grace, your personal fashion consultant. I'm here to help you discover your perfect style and create looks that make you feel absolutely amazing. Let's start this exciting journey together! ✨",
+      text: "Welcome to Grand Villas, Looks like Home, Feels like Family.  We are so glad you dropped by, what can I help you with today? ✨",
       sender: 'grace',
       timestamp: new Date(),
     }
@@ -229,6 +232,8 @@ function App() {
   const [isTyping, setIsTyping] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stepNotification, setStepNotification] = useState<DialogStep | null>(null);
+  const [stageNotRecognized, setStageNotRecognized] = useState(false);
+  const [isRecognizingStage, setIsRecognizingStage] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -288,6 +293,8 @@ function App() {
     setInput('');
     setIsLoading(true);
     setIsTyping(true);
+    setStageNotRecognized(false); // Reset stage recognition state
+    setIsRecognizingStage(true); // Set recognizing state to true
 
     try {
       const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
@@ -326,7 +333,11 @@ function App() {
           if (dialogSteps.includes(frontendStage)) {
             console.log('Updating stage to:', frontendStage); // Debug log
             handleStepProgress(frontendStage);
+          } else {
+            setStageNotRecognized(true);
           }
+        } else {
+          setStageNotRecognized(true);
         }
       } else {
         // Handle single response or error case
@@ -353,6 +364,7 @@ function App() {
     } finally {
       setIsLoading(false);
       setIsTyping(false);
+      setIsRecognizingStage(false); // Reset recognizing state
     }
   }, [input, isLoading, generateMessageId, handleStepProgress]);
 
@@ -530,10 +542,10 @@ function App() {
         {/* Step Progress Header */}
         <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
           <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
-            Style Journey
+            Stage Progress
           </Typography>
           <Typography variant="body2" sx={{ color: '#636e72', mb: 2 }}>
-            Your personalized fashion discovery
+            Your personalized discovery journey
           </Typography>
           <LinearProgress 
             variant="determinate" 
@@ -768,10 +780,10 @@ function App() {
       {/* Sidebar Header */}
       <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
         <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
-          Fashion Studio
+          ElizaOS
         </Typography>
         <Typography variant="body2" sx={{ color: '#636e72' }}>
-          Your personal style journey
+          Personal journey for your family
         </Typography>
       </Box>
 
@@ -823,32 +835,66 @@ function App() {
       {/* Style Stats */}
       <Box sx={{ p: 3 }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#2d3436' }}>
-          Your Style Progress
+          Your Progress Status
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff5f8' }}>
-              <StarIcon sx={{ color: '#ff6b9d', mb: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
-                4.8
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#636e72' }}>
-                Style Score
-              </Typography>
-            </Card>
+        {stageNotRecognized ? (
+          <Alert 
+            severity="warning" 
+            sx={{ 
+              mb: 2,
+              '& .MuiAlert-icon': {
+                color: '#ff6b9d'
+              },
+              '& .MuiAlert-message': {
+                color: '#2d3436'
+              }
+            }}
+          >
+            <AlertTitle sx={{ color: '#2d3436', fontWeight: 600 }}>Stage Not Recognized</AlertTitle>
+            The conversation is not progressing through the expected stages. Please try to stay focused on the current topic.
+          </Alert>
+        ) : isRecognizingStage ? (
+          <Alert 
+            severity="info" 
+            sx={{ 
+              mb: 2,
+              '& .MuiAlert-icon': {
+                color: '#6c5ce7'
+              },
+              '& .MuiAlert-message': {
+                color: '#2d3436'
+              }
+            }}
+          >
+            <AlertTitle sx={{ color: '#2d3436', fontWeight: 600 }}>Now Recognizing Step</AlertTitle>
+            Processing your response to determine the next stage...
+          </Alert>
+        ) : (
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ flex: 1 }}>
+              <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff5f8' }}>
+                <StarIcon sx={{ color: '#ff6b9d', mb: 1 }} />
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
+                  4.8
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#636e72' }}>
+                  Progress Score
+                </Typography>
+              </Card>
+            </Box>
+            <Box sx={{ flex: 1 }}>
+              <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#f0f0ff' }}>
+                <ShoppingBagIcon sx={{ color: '#6c5ce7', mb: 1 }} />
+                <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
+                  0
+                </Typography>
+                <Typography variant="caption" sx={{ color: '#636e72' }}>
+                  Outfits
+                </Typography>
+              </Card>
+            </Box>
           </Box>
-          <Box sx={{ flex: 1 }}>
-            <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#f0f0ff' }}>
-              <ShoppingBagIcon sx={{ color: '#6c5ce7', mb: 1 }} />
-              <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
-                23
-              </Typography>
-              <Typography variant="caption" sx={{ color: '#636e72' }}>
-                Outfits
-              </Typography>
-            </Card>
-          </Box>
-        </Box>
+        )}
       </Box>
     </Box>
   ));
@@ -939,7 +985,7 @@ function App() {
                     Grace
                   </Typography>
                   <Typography variant="body2" sx={{ color: '#636e72', fontSize: '0.9rem' }}>
-                    Fashion Consultant • Online
+                    Senior Sherpa • Online
                   </Typography>
                 </Box>
               </Box>
