@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { 
   Box, 
   Container, 
@@ -262,6 +262,13 @@ function App() {
     }
   }, [currentStep]);
 
+  // Memoize step progress calculation to prevent unnecessary recalculations
+  const stepProgress = useMemo(() => {
+    const currentIndex = dialogSteps.indexOf(currentStep);
+    const completedCount = completedSteps.length;
+    return ((completedCount + (currentIndex >= 0 ? 0.5 : 0)) / dialogSteps.length) * 100;
+  }, [currentStep, completedSteps]);
+
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
@@ -343,12 +350,6 @@ function App() {
       handleSend();
     }
   }, [handleSend]);
-
-  const getStepProgress = useCallback(() => {
-    const currentIndex = dialogSteps.indexOf(currentStep);
-    const completedCount = completedSteps.length;
-    return ((completedCount + (currentIndex >= 0 ? 0.5 : 0)) / dialogSteps.length) * 100;
-  }, [currentStep, completedSteps]);
 
   // Memoized message bubble component to prevent unnecessary re-renders
   const MessageBubble = React.memo(({ message }: { message: Message }) => (
@@ -500,58 +501,56 @@ function App() {
     </Fade>
   ));
 
-  const StepProgressPanel = React.memo(() => (
-    <Box
-      sx={{
-        width: 380,
-        height: '100%',
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
-        borderLeft: '1px solid #e9ecef',
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Step Progress Header */}
-      <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
-          Style Journey
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#636e72', mb: 2 }}>
-          Your personalized fashion discovery
-        </Typography>
-        <LinearProgress 
-          variant="determinate" 
-          value={getStepProgress()} 
-          sx={{ 
-            height: 8, 
-            borderRadius: 4,
-            bgcolor: 'rgba(255, 107, 157, 0.1)',
-            '& .MuiLinearProgress-bar': {
+  // Memoized Step Progress Panel with stable props
+  const StepProgressPanel = React.memo(() => {
+    return (
+      <Box
+        sx={{
+          width: 380,
+          height: '100%',
+          background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
+          borderLeft: '1px solid #e9ecef',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Step Progress Header */}
+        <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
+            Style Journey
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#636e72', mb: 2 }}>
+            Your personalized fashion discovery
+          </Typography>
+          <LinearProgress 
+            variant="determinate" 
+            value={stepProgress} 
+            sx={{ 
+              height: 8, 
               borderRadius: 4,
-              background: 'linear-gradient(90deg, #ff6b9d 0%, #6c5ce7 100%)',
-            }
-          }} 
-        />
-        <Typography variant="caption" sx={{ color: '#636e72', mt: 1, display: 'block' }}>
-          {Math.round(getStepProgress())}% Complete
-        </Typography>
-      </Box>
+              bgcolor: 'rgba(255, 107, 157, 0.1)',
+              '& .MuiLinearProgress-bar': {
+                borderRadius: 4,
+                background: 'linear-gradient(90deg, #ff6b9d 0%, #6c5ce7 100%)',
+              }
+            }} 
+          />
+          <Typography variant="caption" sx={{ color: '#636e72', mt: 1, display: 'block' }}>
+            {Math.round(stepProgress)}% Complete
+          </Typography>
+        </Box>
 
-      {/* Steps List */}
-      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
-        {dialogSteps.map((step, index) => {
-          const isCompleted = completedSteps.includes(step);
-          const isCurrent = currentStep === step;
-          const isUpcoming = !isCompleted && !isCurrent;
+        {/* Steps List */}
+        <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+          {dialogSteps.map((step, index) => {
+            const isCompleted = completedSteps.includes(step);
+            const isCurrent = currentStep === step;
+            const isUpcoming = !isCompleted && !isCurrent;
 
-          return (
-            <Grow
-              key={step}
-              in={true}
-              timeout={300 + index * 100}
-            >
+            return (
               <Card
+                key={step}
                 sx={{
                   mb: 2,
                   background: isCurrent 
@@ -681,12 +680,12 @@ function App() {
                   )}
                 </CardContent>
               </Card>
-            </Grow>
-          );
-        })}
+            );
+          })}
+        </Box>
       </Box>
-    </Box>
-  ));
+    );
+  });
 
   const StepNotification = React.memo(() => (
     <Zoom in={!!stepNotification} timeout={300}>
