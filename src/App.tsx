@@ -142,6 +142,7 @@ const theme = createTheme({
 });
 
 interface Message {
+  id: string;
   text: string;
   sender: 'user' | 'grace';
   timestamp: Date;
@@ -182,6 +183,7 @@ const sidebarItems = [
 function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
+      id: 'initial',
       text: "Hello! I'm Grace, your personal fashion consultant. I'm here to help you discover your perfect style and create looks that make you feel absolutely amazing. Let's start this exciting journey together! ✨",
       sender: 'grace',
       timestamp: new Date(),
@@ -201,28 +203,28 @@ function App() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages.length, scrollToBottom]);
+  }, [messages, scrollToBottom]);
 
-  const simulateTyping = useCallback(() => {
-    setIsTyping(true);
-    const timer = setTimeout(() => setIsTyping(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
+  const generateMessageId = () => {
+    return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  };
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
     const userMessage: Message = {
-      text: input,
+      id: generateMessageId(),
+      text: input.trim(),
       sender: 'user',
       timestamp: new Date(),
     };
 
+    // Add user message immediately
     setMessages(prev => [...prev, userMessage]);
-    const currentInput = input;
+    const currentInput = input.trim();
     setInput('');
     setIsLoading(true);
-    simulateTyping();
+    setIsTyping(true);
 
     try {
       const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
@@ -231,41 +233,54 @@ function App() {
         userName: "User"
       });
 
-      setTimeout(() => {
-        response.data.forEach((item: any, index: number) => {
-          setTimeout(() => {
-            const graceMessage: Message = {
-              text: item.text,
-              sender: 'grace',
-              timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, graceMessage]);
-          }, index * 800);
-        });
-        
+      // Stop typing indicator
+      setIsTyping(false);
+
+      // Process response data
+      if (response.data && Array.isArray(response.data)) {
+        // Add all Grace messages at once to prevent continuous updates
+        const graceMessages: Message[] = response.data.map((item: any, index: number) => ({
+          id: generateMessageId(),
+          text: item.text || 'Sorry, I encountered an error processing your message.',
+          sender: 'grace' as const,
+          timestamp: new Date(Date.now() + index * 100), // Slight delay for ordering
+        }));
+
+        // Add all messages at once
+        setMessages(prev => [...prev, ...graceMessages]);
+
+        // Update step if provided
         const lastResponse = response.data[response.data.length - 1];
         if (lastResponse?.metadata?.stage && dialogSteps.includes(lastResponse.metadata.stage)) {
           setCurrentStep(lastResponse.metadata.stage);
         }
-      }, 1000);
-      
-    } catch (error) {
-      console.error('Error sending message:', error);
-      setTimeout(() => {
-        const errorMessage: Message = {
-          text: 'Sorry, I encountered an error. Please try again.',
+      } else {
+        // Handle single response or error
+        const graceMessage: Message = {
+          id: generateMessageId(),
+          text: response.data?.text || 'Sorry, I encountered an error processing your message.',
           sender: 'grace',
           timestamp: new Date(),
         };
-        setMessages(prev => [...prev, errorMessage]);
-      }, 1000);
+        setMessages(prev => [...prev, graceMessage]);
+      }
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setIsTyping(false);
+      
+      const errorMessage: Message = {
+        id: generateMessageId(),
+        text: 'Sorry, I encountered a connection error. Please try again.',
+        sender: 'grace',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
-      setTimeout(() => {
-        setIsLoading(false);
-        setIsTyping(false);
-      }, 1000);
+      setIsLoading(false);
+      setIsTyping(false);
     }
-  }, [input, isLoading, simulateTyping]);
+  }, [input, isLoading]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -280,7 +295,7 @@ function App() {
   }, [currentStep]);
 
   const MessageBubble = React.memo(({ message, index }: { message: Message; index: number }) => (
-    <Slide direction={message.sender === 'user' ? 'left' : 'right'} in={true} timeout={300 + index * 100}>
+    <Slide direction={message.sender === 'user' ? 'left' : 'right'} in={true} timeout={300 + index * 50}>
       <Box
         sx={{
           display: 'flex',
@@ -686,7 +701,7 @@ function App() {
             }}
           >
             {messages.map((message, index) => (
-              <MessageBubble key={`${message.timestamp.getTime()}-${index}`} message={message} index={index} />
+              <MessageBubble key={message.id} message={message} index={index} />
             ))}
             {isTyping && <TypingIndicator />}
             <div ref={messagesEndRef} />
