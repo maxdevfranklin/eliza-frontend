@@ -291,6 +291,7 @@ function App() {
 
     try {
       const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
+      // const response = await axios.post('http://localhost:3000/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
         text: currentInput,
         userId: "user",
         userName: "User"
@@ -314,8 +315,18 @@ function App() {
 
         // Update step if provided in the last response
         const lastResponse = response.data[response.data.length - 1];
-        if (lastResponse?.metadata?.stage && dialogSteps.includes(lastResponse.metadata.stage)) {
-          handleStepProgress(lastResponse.metadata.stage);
+        console.log('Last response:', lastResponse); // Debug log
+        console.log('Response metadata:', lastResponse?.metadata); // Debug log
+        if (lastResponse?.metadata?.stage) {
+          const stage = lastResponse.metadata.stage;
+          console.log('Stage from backend:', stage); // Debug log
+          // Convert backend stage to frontend DialogStep
+          const frontendStage = stage.toLowerCase().replace(/\s+/g, '_') as DialogStep;
+          console.log('Converted frontend stage:', frontendStage); // Debug log
+          if (dialogSteps.includes(frontendStage)) {
+            console.log('Updating stage to:', frontendStage); // Debug log
+            handleStepProgress(frontendStage);
+          }
         }
       } else {
         // Handle single response or error case
