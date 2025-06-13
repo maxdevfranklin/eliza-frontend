@@ -783,9 +783,9 @@ function App() {
           Grand Villa Guide
         </Typography>
         <Typography variant="body2" sx={{ color: '#636e72' }}>
-          Personal journey for your family
+          Personal journey guided by ElizaOS
         </Typography>
-      </Box>
+      </Box>  
 
       {/* Navigation */}
       <List sx={{ flex: 1, p: 2 }}>
