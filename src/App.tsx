@@ -215,7 +215,7 @@ const sidebarItems = [
 function App() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 'initial',
+      id: 'initial-message',
       text: "Hello! I'm Grace, your personal fashion consultant. I'm here to help you discover your perfect style and create looks that make you feel absolutely amazing. Let's start this exciting journey together! ✨",
       sender: 'grace',
       timestamp: new Date(),
@@ -237,18 +237,21 @@ function App() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages.length, scrollToBottom]);
+  }, [messages, scrollToBottom]);
 
-  const generateMessageId = () => {
+  const generateMessageId = useCallback(() => {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  };
+  }, []);
 
   const handleStepProgress = useCallback((newStep: DialogStep) => {
     if (newStep !== currentStep) {
       // Mark current step as completed
-      if (!completedSteps.includes(currentStep)) {
-        setCompletedSteps(prev => [...prev, currentStep]);
-      }
+      setCompletedSteps(prev => {
+        if (!prev.includes(currentStep)) {
+          return [...prev, currentStep];
+        }
+        return prev;
+      });
       
       // Show notification for new step
       setStepNotification(newStep);
@@ -257,21 +260,23 @@ function App() {
       // Update current step
       setCurrentStep(newStep);
     }
-  }, [currentStep, completedSteps]);
+  }, [currentStep]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
 
+    const currentInput = input.trim();
+    const messageId = generateMessageId();
+    
     const userMessage: Message = {
-      id: generateMessageId(),
-      text: input.trim(),
+      id: messageId,
+      text: currentInput,
       sender: 'user',
       timestamp: new Date(),
     };
 
-    // Add user message immediately
+    // Add user message and clear input immediately
     setMessages(prev => [...prev, userMessage]);
-    const currentInput = input.trim();
     setInput('');
     setIsLoading(true);
     setIsTyping(true);
@@ -287,27 +292,27 @@ function App() {
       setIsTyping(false);
 
       // Process response data
-      if (response.data && Array.isArray(response.data)) {
-        // Add all Grace messages at once to prevent continuous updates
+      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+        // Create all Grace messages with unique IDs
         const graceMessages: Message[] = response.data.map((item: any, index: number) => ({
-          id: generateMessageId(),
+          id: `grace_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
           text: item.text || 'Sorry, I encountered an error processing your message.',
           sender: 'grace' as const,
-          timestamp: new Date(Date.now() + index * 100), // Slight delay for ordering
+          timestamp: new Date(Date.now() + index * 10), // Small delay for ordering
         }));
 
-        // Add all messages at once
+        // Add all Grace messages at once
         setMessages(prev => [...prev, ...graceMessages]);
 
-        // Update step if provided
+        // Update step if provided in the last response
         const lastResponse = response.data[response.data.length - 1];
         if (lastResponse?.metadata?.stage && dialogSteps.includes(lastResponse.metadata.stage)) {
           handleStepProgress(lastResponse.metadata.stage);
         }
       } else {
-        // Handle single response or error
+        // Handle single response or error case
         const graceMessage: Message = {
-          id: generateMessageId(),
+          id: `grace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           text: response.data?.text || 'Sorry, I encountered an error processing your message.',
           sender: 'grace',
           timestamp: new Date(),
@@ -320,7 +325,7 @@ function App() {
       setIsTyping(false);
       
       const errorMessage: Message = {
-        id: generateMessageId(),
+        id: `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         text: 'Sorry, I encountered a connection error. Please try again.',
         sender: 'grace',
         timestamp: new Date(),
@@ -330,7 +335,7 @@ function App() {
       setIsLoading(false);
       setIsTyping(false);
     }
-  }, [input, isLoading, handleStepProgress]);
+  }, [input, isLoading, generateMessageId, handleStepProgress]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -345,7 +350,7 @@ function App() {
     return ((completedCount + (currentIndex >= 0 ? 0.5 : 0)) / dialogSteps.length) * 100;
   }, [currentStep, completedSteps]);
 
-  // Removed animations and memoized properly
+  // Memoized message bubble component to prevent unnecessary re-renders
   const MessageBubble = React.memo(({ message }: { message: Message }) => (
     <Box
       sx={{
@@ -495,7 +500,7 @@ function App() {
     </Fade>
   ));
 
-  const StepProgressPanel = () => (
+  const StepProgressPanel = React.memo(() => (
     <Box
       sx={{
         width: 380,
@@ -681,9 +686,9 @@ function App() {
         })}
       </Box>
     </Box>
-  );
+  ));
 
-  const StepNotification = () => (
+  const StepNotification = React.memo(() => (
     <Zoom in={!!stepNotification} timeout={300}>
       <Box
         sx={{
@@ -736,9 +741,9 @@ function App() {
         )}
       </Box>
     </Zoom>
-  );
+  ));
 
-  const Sidebar = () => (
+  const Sidebar = React.memo(() => (
     <Box
       sx={{
         width: 320,
@@ -835,7 +840,7 @@ function App() {
         </Grid>
       </Box>
     </Box>
-  );
+  ));
 
   return (
     <ThemeProvider theme={theme}>
