@@ -309,19 +309,21 @@ function App() {
 
       // Process response data
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        // Create all Grace messages with unique IDs
-        const graceMessages: Message[] = response.data.map((item: any, index: number) => ({
-          id: `grace_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
-          text: item.text || 'Sorry, I encountered an error processing your message.',
+        // Get the last response only
+        const lastResponse = response.data[response.data.length - 1];
+        
+        // Create a single Grace message with the last response
+        const graceMessage: Message = {
+          id: `grace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          text: lastResponse.text || 'Sorry, I encountered an error processing your message.',
           sender: 'grace' as const,
-          timestamp: new Date(Date.now() + index * 10), // Small delay for ordering
-        }));
+          timestamp: new Date(),
+        };
 
-        // Add all Grace messages at once
-        setMessages(prev => [...prev, ...graceMessages]);
+        // Add the Grace message
+        setMessages(prev => [...prev, graceMessage]);
 
         // Update step if provided in the last response
-        const lastResponse = response.data[response.data.length - 1];
         console.log('Last response:', lastResponse); // Debug log
         console.log('Response metadata:', lastResponse?.metadata); // Debug log
         if (lastResponse?.metadata?.stage) {
