@@ -34,6 +34,7 @@ import {
   Zoom,
   Grow
 } from '@mui/material';
+import type { GridProps } from '@mui/material/Grid';
 import SendIcon from '@mui/icons-material/Send';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
@@ -813,8 +814,8 @@ function App() {
         <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#2d3436' }}>
           Your Style Progress
         </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={6}>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ flex: 1 }}>
             <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff5f8' }}>
               <StarIcon sx={{ color: '#ff6b9d', mb: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
@@ -824,8 +825,8 @@ function App() {
                 Style Score
               </Typography>
             </Card>
-          </Grid>
-          <Grid item xs={6}>
+          </Box>
+          <Box sx={{ flex: 1 }}>
             <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#f0f0ff' }}>
               <ShoppingBagIcon sx={{ color: '#6c5ce7', mb: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
@@ -835,8 +836,8 @@ function App() {
                 Outfits
               </Typography>
             </Card>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Box>
     </Box>
   ));
