@@ -61,6 +61,8 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import axios from 'axios';
+import { AuthProvider, useAuth } from './auth/AuthContext';
+import { AuthPage } from './auth/AuthPage';
 
 const theme = createTheme({
   palette: {
@@ -216,7 +218,8 @@ const sidebarItems = [
   { icon: <FavoriteIcon />, text: 'Saved Favorites', badge: '0' },
 ];
 
-function App() {
+function AuthenticatedApp() {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'initial-message',
@@ -244,7 +247,7 @@ function App() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
-
+  
   const generateMessageId = useCallback(() => {
     return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }, []);
@@ -297,11 +300,11 @@ function App() {
     setIsRecognizingStage(true); // Set recognizing state to true
 
     try {
-      const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
-      // const response = await axios.post('http://localhost:3000/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
+      // const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
+      const response = await axios.post('http://localhost:3000/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
         text: currentInput,
-        userId: "user",
-        userName: "User"
+        userId: user?.username || "User",
+        userName: user?.username || "User"
       });
 
       // Stop typing indicator
@@ -1171,6 +1174,30 @@ function App() {
       </style>
     </ThemeProvider>
   );
+}
+
+function App() {
+  const [showAuth, setShowAuth] = useState(false);
+
+  const handleAuthSuccess = () => {
+    setShowAuth(false);
+  };
+
+  return (
+    <AuthProvider>
+      <AppContent onShowAuth={() => setShowAuth(true)} showAuth={showAuth} onAuthSuccess={handleAuthSuccess} />
+    </AuthProvider>
+  );
+}
+
+function AppContent({ onShowAuth, showAuth, onAuthSuccess }: { onShowAuth: () => void; showAuth: boolean; onAuthSuccess: () => void }) {
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated || showAuth) {
+    return <AuthPage onAuthSuccess={onAuthSuccess} />;
+  }
+
+  return <AuthenticatedApp />;
 }
 
 export default App;
