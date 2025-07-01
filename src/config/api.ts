@@ -7,8 +7,6 @@ interface ApiConfig {
 }
 
 const getApiConfig = (): ApiConfig => {
-  const authPort = parseInt(process.env.REACT_APP_AUTH_PORT || "3002");
-  
   switch (LAUNCH_MODE) {
     case 'PRODUCTION_URL':
     case 'DEVELOPEMENT_URL': // Note: keeping the typo as specified by user
@@ -18,9 +16,10 @@ const getApiConfig = (): ApiConfig => {
       };
     case 'DEVELOPMENT_LOCAL':
     default:
+      // For local development, both APIs use the same port (3000)
       return {
         baseUrl: 'http://localhost:3000',
-        authBaseUrl: `http://localhost:${authPort}`
+        authBaseUrl: 'http://localhost:3000'
       };
   }
 };
