@@ -43,6 +43,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import MenuIcon from '@mui/icons-material/Menu';
+import LogoutIcon from '@mui/icons-material/Logout';
 import StyleIcon from '@mui/icons-material/Style';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PaletteIcon from '@mui/icons-material/Palette';
@@ -63,6 +64,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import axios from 'axios';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AuthPage } from './auth/AuthPage';
+import { getMessageUrl } from './config/api';
 
 const theme = createTheme({
   palette: {
@@ -219,7 +221,7 @@ const sidebarItems = [
 ];
 
 function AuthenticatedApp() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'initial-message',
@@ -300,8 +302,7 @@ function AuthenticatedApp() {
     setIsRecognizingStage(true); // Set recognizing state to true
 
     try {
-      // const response = await axios.post('https://eliza-backend-production-4791.up.railway.app/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
-      const response = await axios.post('http://localhost:3000/01c95267-dd29-02bc-a9ad-d243b05a8d51/message', {
+      const response = await axios.post(getMessageUrl(), {
         text: currentInput,
         userId: user?.username || "User",
         userName: user?.username || "User"
@@ -1006,6 +1007,19 @@ function AuthenticatedApp() {
                   fontSize: '0.8rem',
                 }}
               />
+              <IconButton 
+                onClick={logout}
+                sx={{ 
+                  color: '#636e72',
+                  '&:hover': { 
+                    color: '#ff6b9d', 
+                    backgroundColor: 'rgba(255, 107, 157, 0.1)' 
+                  }
+                }}
+                title="Logout"
+              >
+                <LogoutIcon />
+              </IconButton>
               <IconButton sx={{ color: '#636e72' }}>
                 <MoreVertIcon />
               </IconButton>

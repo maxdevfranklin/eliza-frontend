@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import axios from 'axios';
+import { getAuthUrl } from '../config/api';
 
 interface User {
   id: string;
@@ -125,8 +126,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const verifyToken = async (token: string): Promise<boolean> => {
     try {
-      const authPort = parseInt(process.env.REACT_APP_AUTH_PORT || "3002");
-      const response = await axios.post(`http://localhost:${authPort}/auth/verify`, {
+      const response = await axios.post(getAuthUrl('verify'), {
         token
       });
       return response.data.success;
@@ -139,8 +139,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'AUTH_START' });
     
     try {
-      const authPort = parseInt(process.env.REACT_APP_AUTH_PORT || "3002");
-      const response = await axios.post(`http://localhost:${authPort}/auth/login`, {
+      const response = await axios.post(getAuthUrl('login'), {
         email,
         password
       });
@@ -179,8 +178,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     dispatch({ type: 'AUTH_START' });
     
     try {
-      const authPort = parseInt(process.env.REACT_APP_AUTH_PORT || "3002");
-      const response = await axios.post(`http://localhost:${authPort}/auth/register`, {
+      const response = await axios.post(getAuthUrl('register'), {
         username,
         email,
         password
