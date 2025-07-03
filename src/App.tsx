@@ -44,6 +44,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
+import DeleteIcon from '@mui/icons-material/Delete';
 import StyleIcon from '@mui/icons-material/Style';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PaletteIcon from '@mui/icons-material/Palette';
@@ -64,7 +65,7 @@ import VideocamIcon from '@mui/icons-material/Videocam';
 import axios from 'axios';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AuthPage } from './auth/AuthPage';
-import { getMessageUrl } from './config/api';
+import { getMessageUrl, getAuthUrl } from './config/api';
 
 const theme = createTheme({
   palette: {
@@ -239,6 +240,7 @@ function AuthenticatedApp() {
   const [stepNotification, setStepNotification] = useState<DialogStep | null>(null);
   const [stageNotRecognized, setStageNotRecognized] = useState(false);
   const [isRecognizingStage, setIsRecognizingStage] = useState(false);
+  const [isDeletingHistory, setIsDeletingHistory] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -279,6 +281,51 @@ function AuthenticatedApp() {
     const completedCount = completedSteps.length;
     return ((completedCount + (currentIndex >= 0 ? 0.5 : 0)) / dialogSteps.length) * 100;
   }, [currentStep, completedSteps]);
+
+  const handleDeleteHistory = useCallback(async () => {
+    if (!user?.username || isDeletingHistory) return;
+
+    const confirmDelete = window.confirm(
+      'Are you sure you want to delete all conversation history? This action cannot be undone.'
+    );
+
+    if (!confirmDelete) return;
+
+    setIsDeletingHistory(true);
+
+    try {
+      const response = await axios.delete(getAuthUrl('delete-history'), {
+        data: { userId: user.username }
+      });
+
+      if (response.data.success) {
+        // Reset messages to just the initial message
+        setMessages([
+          {
+            id: 'initial-message',
+            text: "Welcome to Grand Villas, Looks like Home, Feels like Family.  We are so glad you dropped by, what can I help you with today? ✨",
+            sender: 'grace',
+            timestamp: new Date(),
+          }
+        ]);
+        
+        // Reset dialog state
+        setCurrentStep('trust_building');
+        setCompletedSteps([]);
+        setStepNotification(null);
+        setStageNotRecognized(false);
+        
+        alert('Conversation history deleted successfully!');
+      } else {
+        throw new Error(response.data.message || 'Failed to delete history');
+      }
+    } catch (error) {
+      console.error('Error deleting history:', error);
+      alert('Failed to delete conversation history. Please try again.');
+    } finally {
+      setIsDeletingHistory(false);
+    }
+  }, [user?.username, isDeletingHistory]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
@@ -1007,6 +1054,23 @@ function AuthenticatedApp() {
                   fontSize: '0.8rem',
                 }}
               />
+              <IconButton 
+                onClick={handleDeleteHistory}
+                disabled={isDeletingHistory}
+                sx={{ 
+                  color: '#636e72',
+                  '&:hover': { 
+                    color: '#ff6b9d', 
+                    backgroundColor: 'rgba(255, 107, 157, 0.1)' 
+                  },
+                  '&:disabled': {
+                    color: '#ccc',
+                  }
+                }}
+                title="Delete Conversation History"
+              >
+                <DeleteIcon />
+              </IconButton>
               <IconButton 
                 onClick={logout}
                 sx={{ 
