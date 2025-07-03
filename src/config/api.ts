@@ -1,5 +1,5 @@
 // API Configuration based on environment
-const LAUNCH_MODE = process.env.REACT_APP_LAUNCH_MODE || 'DEVELOPMENT_LOCAL';
+const LAUNCH_MODE = process.env.REACT_APP_LAUNCH_MODE || 'DEVELOPEMENT_URL';
 
 interface ApiConfig {
   baseUrl: string;
