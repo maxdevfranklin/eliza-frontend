@@ -62,6 +62,7 @@ import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import VideocamIcon from '@mui/icons-material/Videocam';
+import InfoIcon from '@mui/icons-material/Info';
 import axios from 'axios';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AuthPage } from './auth/AuthPage';
@@ -171,7 +172,7 @@ interface Message {
 
 type DialogStep = 'trust_building' | 'situation_discovery' | 'lifestyle_discovery' | 
                  'readiness_discovery' | 'priorities_discovery' | 'needs_matching' | 
-                 'visit_transition';
+                 'info_sharing' | 'visit_transition';
 
 const dialogSteps: DialogStep[] = [
   'trust_building',
@@ -180,6 +181,7 @@ const dialogSteps: DialogStep[] = [
   'readiness_discovery',
   'priorities_discovery',
   'needs_matching',
+  'info_sharing',
   'visit_transition'
 ];
 
@@ -190,6 +192,7 @@ const stepLabels = {
   readiness_discovery: 'Your Readiness',
   priorities_discovery: 'Your Priorities',
   needs_matching: 'Needs Matching',
+  info_sharing: 'Info Sharing',
   visit_transition: 'Next Steps'
 };
 
@@ -200,6 +203,7 @@ const stepDescriptions = {
   readiness_discovery: 'Gauging your awareness & Readiness',
   priorities_discovery: 'Understanding priorities in a community',
   needs_matching: 'Connecting priorities to community',
+  info_sharing: 'Sharing information about Grand Villa',
   visit_transition: 'Transitioning to a visit'
 };
 
@@ -210,6 +214,7 @@ const stepIcons = {
   readiness_discovery: <TrendingUpIcon />,
   priorities_discovery: <StarIcon />,
   needs_matching: <AutoAwesomeIcon />,
+  info_sharing: <InfoIcon />,
   visit_transition: <TrendingFlatIcon />
 };
 
