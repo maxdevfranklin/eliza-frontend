@@ -63,6 +63,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 import VideocamIcon from '@mui/icons-material/Videocam';
 import InfoIcon from '@mui/icons-material/Info';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import axios from 'axios';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AuthPage } from './auth/AuthPage';
@@ -172,7 +173,7 @@ interface Message {
 
 type DialogStep = 'trust_building' | 'situation_discovery' | 'lifestyle_discovery' | 
                  'readiness_discovery' | 'priorities_discovery' | 'needs_matching' | 
-                 'info_sharing' | 'visit_transition';
+                 'info_sharing' | 'schedule_visit' | 'visit_transition';
 
 const dialogSteps: DialogStep[] = [
   'trust_building',
@@ -182,6 +183,7 @@ const dialogSteps: DialogStep[] = [
   'priorities_discovery',
   'needs_matching',
   'info_sharing',
+  'schedule_visit',
   'visit_transition'
 ];
 
@@ -193,6 +195,7 @@ const stepLabels = {
   priorities_discovery: 'Your Priorities',
   needs_matching: 'Needs Matching',
   info_sharing: 'Info Sharing',
+  schedule_visit: 'Schedule Visit',
   visit_transition: 'Next Steps'
 };
 
@@ -204,6 +207,7 @@ const stepDescriptions = {
   priorities_discovery: 'Understanding priorities in a community',
   needs_matching: 'Connecting priorities to community',
   info_sharing: 'Sharing information about Grand Villa',
+  schedule_visit: 'Confirm contact information',
   visit_transition: 'Transitioning to a visit'
 };
 
@@ -215,7 +219,8 @@ const stepIcons = {
   priorities_discovery: <StarIcon />,
   needs_matching: <AutoAwesomeIcon />,
   info_sharing: <InfoIcon />,
-  visit_transition: <TrendingFlatIcon />
+  schedule_visit: <ScheduleIcon />,
+  visit_transition: <TrendingFlatIcon />,
 };
 
 const sidebarItems = [
