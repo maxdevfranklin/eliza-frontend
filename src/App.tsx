@@ -34,7 +34,8 @@ import {
   Zoom,
   Grow,
   Alert,
-  AlertTitle
+  AlertTitle,
+  MenuItem
 } from '@mui/material';
 import type { GridProps } from '@mui/material/Grid';
 import SendIcon from '@mui/icons-material/Send';
@@ -231,8 +232,92 @@ const sidebarItems = [
   { icon: <FavoriteIcon />, text: 'Saved Favorites', badge: '0' },
 ];
 
+interface IntakeForm {
+  name: string;
+  phone: string;
+  familyMemberName: string;
+  reasonForCall: string;
+  greatestConcern: string;
+  impact: string;
+  currentResidence: string;
+  dailyRoutine: string;
+  enjoysDoing: string;
+  awareLooking: 'yes' | 'no' | '';
+  feelingsAboutMove: string;
+  othersInvolved: string;
+  mostImportant: string;
+  recap: string;
+  email: string;
+  mailingAddress: string;
+  preferredContactMethod: 'phone' | 'email' | 'mail' | '';
+  referralSource: string;
+}
+
+// Map form fields to dialog steps for the left-bar stepper form
+const formSteps: DialogStep[] = [
+  'trust_building',
+  'situation_discovery',
+  'lifestyle_discovery',
+  'readiness_discovery',
+  'priorities_discovery',
+  'needs_matching',
+  'visit_transition'
+];
+
+const formStepFieldMap: Record<DialogStep, Array<keyof IntakeForm>> = {
+  trust_building: ['name', 'phone', 'familyMemberName'],
+  situation_discovery: ['reasonForCall', 'greatestConcern', 'impact', 'currentResidence'],
+  lifestyle_discovery: ['dailyRoutine', 'enjoysDoing'],
+  readiness_discovery: ['awareLooking', 'feelingsAboutMove', 'othersInvolved'],
+  priorities_discovery: ['mostImportant'],
+  needs_matching: ['recap'],
+  info_sharing: [],
+  schedule_visit: [],
+  visit_transition: ['mailingAddress', 'preferredContactMethod', 'referralSource']
+};
+
+const fieldLabels: Record<keyof IntakeForm, string> = {
+  name: 'Name',
+  phone: 'Phone number',
+  familyMemberName: "Family member's name",
+  reasonForCall: 'What made you decide to call us today?',
+  greatestConcern: 'What’s your greatest concern at this time?',
+  impact: 'How is this impacting you?',
+  currentResidence: 'Where does your family member currently live?',
+  dailyRoutine: 'Tell me about your family member’s daily routine',
+  enjoysDoing: 'What does he/she enjoy doing?',
+  awareLooking: 'Is he/she aware that you’re looking?',
+  feelingsAboutMove: 'How does he/she feel about the move?',
+  othersInvolved: 'Is anyone else going to be involved in supporting you to make this decision?',
+  mostImportant: 'What’s most important to you regarding the community you may choose?',
+  recap: 'Recap (It sounds like...)',
+  email: 'Email',
+  mailingAddress: 'Mailing address',
+  preferredContactMethod: 'Preferred contact method',
+  referralSource: 'How did you hear about us?'
+};
+
 function AuthenticatedApp() {
   const { user, logout } = useAuth();
+
+  // Suppress ResizeObserver errors (they're non-critical)
+  useEffect(() => {
+    const originalError = console.error;
+    console.error = (...args) => {
+      if (
+        args[0] && 
+        typeof args[0] === 'string' && 
+        args[0].includes('ResizeObserver loop completed with undelivered notifications')
+      ) {
+        return; // Suppress this specific error
+      }
+      originalError.apply(console, args);
+    };
+
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 'initial-message',
@@ -253,6 +338,31 @@ function AuthenticatedApp() {
   const [isDeletingHistory, setIsDeletingHistory] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const [intakeForm, setIntakeForm] = useState<IntakeForm>({
+    name: '',
+    phone: '',
+    familyMemberName: '',
+    reasonForCall: '',
+    greatestConcern: '',
+    impact: '',
+    currentResidence: '',
+    dailyRoutine: '',
+    enjoysDoing: '',
+    awareLooking: '',
+    feelingsAboutMove: '',
+    othersInvolved: '',
+    mostImportant: '',
+    recap: '',
+    email: '',
+    mailingAddress: '',
+    preferredContactMethod: '',
+    referralSource: '',
+  });
+
+  const handleIntakeChange = useCallback((field: keyof IntakeForm, value: string) => {
+    setIntakeForm(prev => ({ ...prev, [field]: value }));
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -429,7 +539,7 @@ function AuthenticatedApp() {
       setIsTyping(false);
       setIsRecognizingStage(false); // Reset recognizing state
     }
-  }, [input, isLoading, generateMessageId, handleStepProgress]);
+  }, [input, isLoading, generateMessageId, handleStepProgress, user?.username]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -589,7 +699,7 @@ function AuthenticatedApp() {
   ));
 
   // Memoized Step Progress Panel with stable props
-  const StepProgressPanel = React.memo(() => {
+  const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, stepProgressProp }: { currentStepProp: DialogStep; completedStepsProp: DialogStep[]; stepProgressProp: number }) => {
     return (
       <Box
         sx={{
@@ -612,7 +722,7 @@ function AuthenticatedApp() {
           </Typography>
           <LinearProgress 
             variant="determinate" 
-            value={stepProgress} 
+            value={stepProgressProp} 
             sx={{ 
               height: 8, 
               borderRadius: 4,
@@ -624,15 +734,15 @@ function AuthenticatedApp() {
             }} 
           />
           <Typography variant="caption" sx={{ color: '#636e72', mt: 1, display: 'block' }}>
-            {Math.round(stepProgress)}% Complete
+            {Math.round(stepProgressProp)}% Complete
           </Typography>
         </Box>
 
         {/* Steps List */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
           {dialogSteps.map((step, index) => {
-            const isCompleted = completedSteps.includes(step);
-            const isCurrent = currentStep === step;
+            const isCompleted = completedStepsProp.includes(step);
+            const isCurrent = currentStepProp === step;
             const isUpcoming = !isCompleted && !isCurrent;
 
             return (
@@ -829,138 +939,134 @@ function AuthenticatedApp() {
     </Zoom>
   ));
 
-  const Sidebar = React.memo(() => (
-    <Box
-      sx={{
-        width: 320,
-        height: '100%',
-        background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
-        borderRight: '1px solid #e9ecef',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Sidebar Header */}
-      <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
-          Grand Villa Guide
-        </Typography>
-        <Typography variant="body2" sx={{ color: '#636e72' }}>
-          Personal journey guided by ElizaOS
-        </Typography>
-      </Box>  
+  const Sidebar = React.memo(({ intakeForm, onChange }: { intakeForm: IntakeForm; onChange: (field: keyof IntakeForm, value: string) => void }) => {
+    const totalFields = formSteps.flatMap(step => formStepFieldMap[step]).length;
+    const filledCount = formSteps
+      .flatMap(step => formStepFieldMap[step])
+      .reduce((acc, field) => acc + (String(intakeForm[field] || '').trim().length > 0 ? 1 : 0), 0);
 
-      {/* Navigation */}
-      <List sx={{ flex: 1, p: 2 }}>
-        {sidebarItems.map((item, index) => (
-          <ListItem
-            key={index}
-            sx={{
-              borderRadius: 2,
-              mb: 1,
-              '&:hover': {
-                backgroundColor: 'rgba(255, 107, 157, 0.08)',
-                transform: 'translateX(4px)',
-              },
-              transition: 'all 0.2s ease',
-              cursor: 'pointer',
-            }}
-          >
-            <ListItemIcon sx={{ color: '#ff6b9d', minWidth: 40 }}>
-              {item.icon}
-            </ListItemIcon>
-            <ListItemText 
-              primary={item.text}
-              primaryTypographyProps={{
-                fontWeight: 500,
-                fontSize: '0.95rem',
-              }}
-            />
-            {item.badge && (
-              <Chip
-                label={item.badge}
-                size="small"
-                sx={{
-                  backgroundColor: '#ff6b9d',
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: '0.75rem',
-                  height: 20,
-                }}
-              />
-            )}
-          </ListItem>
-        ))}
-      </List>
+    const firstIncompleteIndex = useMemo(() => {
+      const idx = formSteps.findIndex(step => formStepFieldMap[step].some(f => !String(intakeForm[f] || '').trim()));
+      return idx === -1 ? formSteps.length - 1 : idx;
+    }, [intakeForm]);
 
-      <Divider />
+    const [activeStep, setActiveStep] = useState<number>(firstIncompleteIndex);
 
-      {/* Style Stats */}
-      <Box sx={{ p: 3 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: '#2d3436' }}>
-          Your Progress Status
-        </Typography>
-        {stageNotRecognized ? (
-          <Alert 
-            severity="warning" 
-            sx={{ 
-              mb: 2,
-              '& .MuiAlert-icon': {
-                color: '#ff6b9d'
-              },
-              '& .MuiAlert-message': {
-                color: '#2d3436'
-              }
-            }}
-          >
-            <AlertTitle sx={{ color: '#2d3436', fontWeight: 600 }}>Stage Not Recognized</AlertTitle>
-            The conversation is not progressing through the expected stages. Please try to stay focused on the current topic.
-          </Alert>
-        ) : isRecognizingStage ? (
-          <Alert 
-            severity="info" 
-            sx={{ 
-              mb: 2,
-              '& .MuiAlert-icon': {
-                color: '#6c5ce7'
-              },
-              '& .MuiAlert-message': {
-                color: '#2d3436'
-              }
-            }}
-          >
-            <AlertTitle sx={{ color: '#2d3436', fontWeight: 600 }}>Now Recognizing Step</AlertTitle>
-            Processing your response to determine the next stage...
-          </Alert>
-        ) : (
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <Box sx={{ flex: 1 }}>
-              <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#fff5f8' }}>
-                <StarIcon sx={{ color: '#ff6b9d', mb: 1 }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
-                  4.8
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#636e72' }}>
-                  Progress Score
-                </Typography>
-              </Card>
-            </Box>
-            <Box sx={{ flex: 1 }}>
-              <Card sx={{ textAlign: 'center', p: 2, backgroundColor: '#f0f0ff' }}>
-                <ShoppingBagIcon sx={{ color: '#6c5ce7', mb: 1 }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436' }}>
-                  0
-                </Typography>
-                <Typography variant="caption" sx={{ color: '#636e72' }}>
-                  Outfits
-                </Typography>
-              </Card>
-            </Box>
-          </Box>
-        )}
+    useEffect(() => {
+      setActiveStep(firstIncompleteIndex);
+    }, [firstIncompleteIndex]);
+
+    const isStepCompleted = (step: DialogStep) => formStepFieldMap[step].every(f => String(intakeForm[f] || '').trim());
+
+    const renderField = (field: keyof IntakeForm) => {
+      const commonProps = {
+        key: field,
+        size: 'small' as const,
+        fullWidth: true,
+        label: fieldLabels[field],
+        value: intakeForm[field] as string,
+        onChange: (e: React.ChangeEvent<HTMLInputElement>) => onChange(field, e.target.value),
+      };
+
+      if (field === 'awareLooking') {
+        return (
+          <TextField select {...commonProps}>
+            <MenuItem value="">Select</MenuItem>
+            <MenuItem value="yes">Yes</MenuItem>
+            <MenuItem value="no">No</MenuItem>
+          </TextField>
+        );
+      }
+
+      if (field === 'preferredContactMethod') {
+        return (
+          <TextField select {...commonProps}>
+            <MenuItem value="">Select</MenuItem>
+            <MenuItem value="phone">Phone</MenuItem>
+            <MenuItem value="email">Email</MenuItem>
+            <MenuItem value="mail">Mail</MenuItem>
+          </TextField>
+        );
+      }
+
+      const isMultiline = [
+        'reasonForCall',
+        'greatestConcern',
+        'impact',
+        'dailyRoutine',
+        'enjoysDoing',
+        'feelingsAboutMove',
+        'othersInvolved',
+        'mostImportant',
+        'recap',
+        'mailingAddress',
+      ].includes(field);
+
+      return (
+        <TextField
+          {...commonProps}
+          multiline={isMultiline}
+          minRows={isMultiline ? 2 : undefined}
+        />
+      );
+    };
+
+    return (
+      <Box
+        sx={{
+          width: 420,
+          height: '100%',
+          background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
+          borderRight: '1px solid #e9ecef',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}
+      >
+        <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 0.5 }}>
+            Grand Villa Guide
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#636e72' }}>
+            Personal journey guided by ElizaOS
+          </Typography>
+        </Box>
+
+        {/* Form Stepper */}
+        <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+          <Stepper activeStep={activeStep} orientation="vertical" connector={null}>
+            {formSteps.map((step, index) => {
+              const completed = isStepCompleted(step);
+              return (
+                <Step key={step} expanded active={index === activeStep} completed={completed}>
+                  <StepLabel>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box sx={{ color: completed ? '#00b894' : '#ff6b9d', display: 'flex', alignItems: 'center' }}>
+                        {stepIcons[step]}
+                      </Box>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#2d3436' }}>
+                        {stepLabels[step]}
+                      </Typography>
+                      {completed && (
+                        <Chip label="Done" size="small" sx={{ ml: 1, bgcolor: 'rgba(0,184,148,0.1)', color: '#00b894', fontWeight: 700 }} />
+                      )}
+                    </Box>
+                  </StepLabel>
+                  <StepContent TransitionProps={{ unmountOnExit: false }}>
+                    <Card sx={{ p: 2, mt: 1, background: '#ffffff', boxShadow: '0 8px 24px rgba(0,0,0,0.06)', borderRadius: 3 }}>
+                      <Stack spacing={1.5}>
+                        {formStepFieldMap[step].map(renderField)}
+                      </Stack>
+                    </Card>
+                  </StepContent>
+                </Step>
+              );
+            })}
+          </Stepper>
+        </Box>
       </Box>
-    </Box>
-  ));
+    );
+  });
 
   return (
     <ThemeProvider theme={theme}>
@@ -974,7 +1080,7 @@ function AuthenticatedApp() {
         }}
       >
         {/* Sidebar for Desktop */}
-        {!isMobile && <Sidebar />}
+        {!isMobile && <Sidebar intakeForm={intakeForm} onChange={handleIntakeChange} />}
 
         {/* Mobile Drawer */}
         <Drawer
@@ -984,11 +1090,11 @@ function AuthenticatedApp() {
           sx={{
             display: { xs: 'block', md: 'none' },
             '& .MuiDrawer-paper': {
-              width: 320,
+              width: 420,
             },
           }}
         >
-          <Sidebar />
+          <Sidebar intakeForm={intakeForm} onChange={handleIntakeChange} />
         </Drawer>
 
         {/* Main Chat Area */}
@@ -1229,7 +1335,13 @@ function AuthenticatedApp() {
         </Box>
 
         {/* Step Progress Panel - Desktop Only */}
-        {!isMobile && <StepProgressPanel />}
+        {!isMobile && (
+          <StepProgressPanel 
+            currentStepProp={currentStep} 
+            completedStepsProp={completedSteps} 
+            stepProgressProp={stepProgress} 
+          />
+        )}
 
         {/* Step Notification */}
         <StepNotification />
