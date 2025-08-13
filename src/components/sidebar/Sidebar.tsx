@@ -29,7 +29,7 @@ const Sidebar = React.memo(({ intakeForm, onChange }: SidebarProps) => {
 
   const renderField = (field: keyof IntakeForm) => {
     const commonProps = {
-      key: field,
+      // key removed from spread props to avoid React key warning
       size: 'small' as const,
       fullWidth: true,
       label: fieldLabels[field],
@@ -39,7 +39,7 @@ const Sidebar = React.memo(({ intakeForm, onChange }: SidebarProps) => {
 
     if (field === 'awareLooking') {
       return (
-        <TextField select {...commonProps}>
+        <TextField key={field} select {...commonProps}>
           <MenuItem value="">Select</MenuItem>
           <MenuItem value="yes">Yes</MenuItem>
           <MenuItem value="no">No</MenuItem>
@@ -49,7 +49,7 @@ const Sidebar = React.memo(({ intakeForm, onChange }: SidebarProps) => {
 
     if (field === 'preferredContactMethod') {
       return (
-        <TextField select {...commonProps}>
+        <TextField key={field} select {...commonProps}>
           <MenuItem value="">Select</MenuItem>
           <MenuItem value="phone">Phone</MenuItem>
           <MenuItem value="email">Email</MenuItem>
@@ -71,7 +71,14 @@ const Sidebar = React.memo(({ intakeForm, onChange }: SidebarProps) => {
       'mailingAddress',
     ].includes(field as string);
 
-    return <TextField {...commonProps} multiline={isMultiline} minRows={isMultiline ? 2 : undefined} />;
+    return (
+      <TextField
+        key={field}
+        {...commonProps}
+        multiline={isMultiline}
+        minRows={isMultiline ? 2 : undefined}
+      />
+    );
   };
 
   return (

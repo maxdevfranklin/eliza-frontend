@@ -22,6 +22,7 @@ import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import MicIcon from '@mui/icons-material/Mic';
 import ImageIcon from '@mui/icons-material/Image';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import InfoIcon from '@mui/icons-material/Info';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../auth/AuthContext';
@@ -31,6 +32,7 @@ import StepProgressPanel from '../components/progress/StepProgressPanel';
 import StepNotification from '../components/progress/StepNotification';
 import MessageBubble from '../components/chat/MessageBubble';
 import TypingIndicator from '../components/chat/TypingIndicator';
+import AgentModal from '../components/agents/AgentModal';
 import { Message, DialogStep, IntakeForm } from '../types/chat';
 import { dialogSteps, stepLabels } from '../constants/steps';
 
@@ -68,6 +70,8 @@ function AuthenticatedApp() {
   const [stepNotification, setStepNotification] = useState<DialogStep | null>(null);
   const [stageNotRecognized, setStageNotRecognized] = useState(false);
   const [isRecognizingStage, setIsRecognizingStage] = useState(false);
+  const [isDeletingHistory, setIsDeletingHistory] = useState(false);
+  const [agentModalOpen, setAgentModalOpen] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
 
@@ -168,9 +172,7 @@ function AuthenticatedApp() {
     } finally {
       setIsDeletingHistory(false);
     }
-  }, [user?.username]);
-
-  const [isDeletingHistory, setIsDeletingHistory] = useState(false);
+  }, [user?.username, isDeletingHistory]);
 
   const handleSend = useCallback(async () => {
     if (!input.trim() || isLoading) return;
@@ -337,6 +339,9 @@ function AuthenticatedApp() {
                 fontSize: '0.8rem',
               }}
             />
+            <Button variant="outlined" startIcon={<InfoIcon />} onClick={() => setAgentModalOpen(true)}>
+              Agent
+            </Button>
             <IconButton onClick={handleDeleteHistory} disabled={isDeletingHistory} sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }, '&:disabled': { color: '#ccc' } }} title="Delete Conversation History">
               <DeleteIcon />
             </IconButton>
@@ -431,6 +436,7 @@ function AuthenticatedApp() {
       )}
 
       <StepNotification stepNotification={stepNotification} />
+      <AgentModal open={agentModalOpen} onClose={() => setAgentModalOpen(false)} name="GraceFletcher" />
     </Box>
   );
 }

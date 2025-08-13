@@ -1,5 +1,5 @@
 // API Configuration based on environment
-const LAUNCH_MODE = process.env.REACT_APP_LAUNCH_MODE || 'DEVELOPEMENT_URL';
+const LAUNCH_MODE = process.env.REACT_APP_LAUNCH_MODE || 'DEVELOPMENT_LOCAL';
 
 interface ApiConfig {
   baseUrl: string;
@@ -34,4 +34,8 @@ export const getMessageUrl = (agentId: string = '01c95267-dd29-02bc-a9ad-d243b05
 // Helper function to get auth URLs
 export const getAuthUrl = (endpoint: string) => {
   return `${apiConfig.authBaseUrl}/auth/${endpoint}`;
-}; 
+};
+
+// Agents endpoints simplified: backend defaults to GraceFletcher when name is omitted
+export const getAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`;
+export const putAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`; 
