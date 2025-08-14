@@ -26,7 +26,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../auth/AuthContext';
-import { getMessageUrl, getAuthUrl } from '../config/api';
+import { getMessageUrl, getAuthUrl, fetchComprehensiveRecord } from '../config/api';
 import Sidebar from '../components/sidebar/Sidebar';
 import StepProgressPanel from '../components/progress/StepProgressPanel';
 import StepNotification from '../components/progress/StepNotification';
@@ -35,6 +35,7 @@ import TypingIndicator from '../components/chat/TypingIndicator';
 import AgentModal from '../components/agents/AgentModal';
 import { Message, DialogStep, IntakeForm } from '../types/chat';
 import { dialogSteps, stepLabels } from '../constants/steps';
+import { mapComprehensiveRecordToForm, testFormMapping } from '../utils/formMapper';
 
 function AuthenticatedApp() {
   const { user, logout } = useAuth();
@@ -95,6 +96,53 @@ function AuthenticatedApp() {
     preferredContactMethod: '',
     referralSource: '',
   });
+
+  // Fetch comprehensive record data and populate form
+  const fetchAndPopulateForm = useCallback(async () => {
+    if (!user?.username) return;
+
+    try {
+      // Use the actual IDs from the conversation
+      const roomId = '45b0dcf5-802e-074e-9e67-84991c38b62e';
+      const userId = user.username; // Use the authenticated user's username
+      const agentId = '01c95267-dd29-02bc-a9ad-d243b05a8d51';
+
+      const response = await fetchComprehensiveRecord(roomId, userId, agentId);
+      
+      console.log('Comprehensive record response:', response);
+      
+      if (response.success && response.data) {
+        const { comprehensiveRecord, visitInfo } = response.data;
+        
+        console.log('Comprehensive record data:', comprehensiveRecord);
+        console.log('Visit info data:', visitInfo);
+        
+        // Map the data to form fields
+        const formData = mapComprehensiveRecordToForm(comprehensiveRecord, visitInfo);
+        
+        console.log('Mapped form data:', formData);
+        
+        // Update the form with the fetched data
+        setIntakeForm(prev => ({
+          ...prev,
+          ...formData
+        }));
+        
+        console.log('Form populated with comprehensive record data:', formData);
+      }
+    } catch (error) {
+      console.error('Error fetching comprehensive record:', error);
+    }
+  }, [user?.username]);
+
+
+
+  // Fetch form data when component mounts or user changes
+  useEffect(() => {
+    fetchAndPopulateForm();
+    // Test the form mapping with sample data
+    testFormMapping();
+  }, [fetchAndPopulateForm]);
 
   const handleIntakeChange = useCallback((field: keyof IntakeForm, value: string) => {
     setIntakeForm((prev) => ({ ...prev, [field]: value }));
@@ -250,8 +298,13 @@ function AuthenticatedApp() {
       setIsLoading(false);
       setIsTyping(false);
       setIsRecognizingStage(false);
+      
+      // Fetch updated form data after each message
+      setTimeout(() => {
+        fetchAndPopulateForm();
+      }, 1000); // Small delay to ensure backend has processed the message
     }
-  }, [input, isLoading, generateMessageId, handleStepProgress, user?.username]);
+  }, [input, isLoading, generateMessageId, handleStepProgress, user?.username, fetchAndPopulateForm]);
 
   const handleKeyPress = useCallback(
     (e: React.KeyboardEvent) => {

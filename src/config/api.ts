@@ -38,4 +38,25 @@ export const getAuthUrl = (endpoint: string) => {
 
 // Agents endpoints simplified: backend defaults to GraceFletcher when name is omitted
 export const getAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`;
-export const putAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`; 
+export const putAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`;
+
+export const fetchComprehensiveRecord = async (roomId: string, userId: string, agentId: string) => {
+  try {
+    const response = await fetch(`${apiConfig.authBaseUrl}/auth/comprehensive-record?roomId=${roomId}&userId=${userId}&agentId=${agentId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching comprehensive record:', error);
+    throw error;
+  }
+}; 
