@@ -21,6 +21,7 @@ interface AgentModalProps {
 }
 
 const jsonFields = [
+  'action',
   'message_examples',
   'post_examples',
   'topics',
@@ -87,27 +88,93 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
     setSuccess(null);
 
     const updates: Record<string, any> = {};
-    editableFields.forEach((field) => {
-      const raw = form[field as string];
-      if (jsonFields.includes(field as any)) {
-        if (raw === '' || raw === undefined || raw === null) {
-          updates[field] = null;
-        } else {
-          try {
-            updates[field] = JSON.parse(raw);
-          } catch (e) {
-            setSaving(false);
-            setError(`Invalid JSON in ${field}`);
-            throw e;
-          }
-        }
-      } else if (field === 'enabled') {
-        updates[field] = String(raw).toLowerCase() === 'true' || raw === true;
-      } else {
-        updates[field] = raw;
+    
+        // Helper function to safely parse JSON
+    const safeJsonParse = (value: string, fieldName: string): any => {
+      if (!value || value.trim() === '') {
+        return null;
       }
-    });
+      
+      const trimmed = value.trim();
+      
+      // If it's already a valid JSON object/array, parse it
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch (e) {
+          const errorMessage = e instanceof Error ? e.message : 'Unknown JSON parsing error';
+          throw new Error(`Invalid JSON in ${fieldName}: ${errorMessage}`);
+        }
+      }
+      
+      // If it's a quoted string, parse it as JSON string
+      if (trimmed.startsWith('"') && trimmed.endsWith('"')) {
+        try {
+          return JSON.parse(trimmed);
+        } catch {
+          // If parsing fails, return as plain string without quotes
+          return trimmed.slice(1, -1);
+        }
+      }
+      
+      // If it's a simple string without quotes, return as is
+      if (!trimmed.startsWith('"') && !trimmed.startsWith('[') && !trimmed.startsWith('{')) {
+        return trimmed;
+      }
+      
+      // If it looks like it should be JSON but isn't valid, try to fix common issues
+      try {
+        // Try to escape any unescaped quotes in the middle
+        const fixed = trimmed.replace(/(?<!\\)"/g, '\\"');
+        return JSON.parse(fixed);
+      } catch {
+        // If all else fails, return as plain string
+        return trimmed;
+      }
+    };
 
+    // Helper function to safely serialize data for database
+    const safeJsonSerialize = (value: any, fieldName: string): any => {
+      if (value === null || value === undefined || value === '') {
+        return null;
+      }
+      
+      // If it's already a string, try to parse it first to see if it's JSON
+      if (typeof value === 'string') {
+        return safeJsonParse(value, fieldName);
+      }
+      
+      // If it's an array or object, return it as-is (will be JSON.stringify'd by axios)
+      if (Array.isArray(value) || typeof value === 'object') {
+        return value;
+      }
+      
+      // For other types, return as string
+      return String(value);
+    };
+
+    try {
+      editableFields.forEach((field) => {
+        const raw = form[field as string];
+        if (jsonFields.includes(field as any)) {
+          updates[field] = safeJsonSerialize(raw, field);
+        } else if (field === 'enabled') {
+          updates[field] = String(raw).toLowerCase() === 'true' || raw === true;
+        } else {
+          updates[field] = raw;
+        }
+      });
+         } catch (e) {
+       setSaving(false);
+       const errorMessage = e instanceof Error ? e.message : 'Unknown error occurred';
+       setError(errorMessage);
+       return;
+     }
+
+    // Debug: log what we're sending
+    console.log('Sending updates:', JSON.stringify(updates, null, 2));
+    console.log('Updates type check:', Object.keys(updates).map(key => `${key}: ${typeof updates[key]} (${Array.isArray(updates[key]) ? 'array' : 'not-array'})`));
+    
     axios
       .put(putAgentByNameUrl(), updates)
       .then((res) => {
@@ -117,7 +184,10 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
           setError(res.data?.message || 'Failed to update agent');
         }
       })
-      .catch((e) => setError(e?.message || 'Failed to update agent'))
+      .catch((e) => {
+        console.error('Update error:', e);
+        setError(e?.message || 'Failed to update agent');
+      })
       .finally(() => setSaving(false));
   };
 
@@ -131,6 +201,25 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
           <Alert severity="error">{error}</Alert>
         ) : (
           <Stack spacing={2}>
+            {/* Avatar Display */}
+            {agent?.avatar && (
+              <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+                <Box
+                  component="img"
+                  src={agent.avatar}
+                  alt={`${name} avatar`}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '2px solid #e0e0e0',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  }}
+                />
+              </Box>
+            )}
+            
             <Box sx={{ display: 'flex', gap: 2 }}>
               <TextField
                 label="Enabled"
@@ -146,6 +235,18 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
                 onChange={(e) => handleChange('username', e.target.value)}
               />
             </Box>
+            
+            {/* Action field - placed right after username as requested */}
+            <TextField
+              label="Action"
+              fullWidth
+              multiline
+              minRows={4}
+              value={form.action ?? ''}
+              onChange={(e) => handleChange('action', e.target.value)}
+              helperText="JSON array of action instructions"
+            />
+            
             <TextField
               label="System"
               fullWidth
@@ -163,7 +264,7 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
               onChange={(e) => handleChange('bio', e.target.value)}
             />
 
-            {jsonFields.map((field) => (
+            {jsonFields.slice(1).map((field) => (
               <TextField
                 key={field}
                 label={field}
