@@ -30,6 +30,7 @@ export interface IntakeForm {
   feelingsAboutMove: string;
   othersInvolved: string;
   mostImportant: string;
+  confidenceFactors: string;
   recap: string;
   email: string;
   mailingAddress: string;

@@ -90,6 +90,7 @@ function AuthenticatedApp() {
     feelingsAboutMove: '',
     othersInvolved: '',
     mostImportant: '',
+    confidenceFactors: '',
     recap: '',
     email: '',
     mailingAddress: '',
@@ -109,18 +110,17 @@ function AuthenticatedApp() {
 
       const response = await fetchComprehensiveRecord(roomId, userId, agentId);
       
-      console.log('Comprehensive record response:', response);
+      
       
       if (response.success && response.data) {
         const { comprehensiveRecord, visitInfo } = response.data;
         
-        console.log('Comprehensive record data:', comprehensiveRecord);
-        console.log('Visit info data:', visitInfo);
+        
         
         // Map the data to form fields
         const formData = mapComprehensiveRecordToForm(comprehensiveRecord, visitInfo);
         
-        console.log('Mapped form data:', formData);
+        
         
         // Update the form with the fetched data
         setIntakeForm(prev => ({
@@ -128,7 +128,7 @@ function AuthenticatedApp() {
           ...formData
         }));
         
-        console.log('Form populated with comprehensive record data:', formData);
+        
       }
     } catch (error) {
       console.error('Error fetching comprehensive record:', error);
@@ -165,7 +165,8 @@ function AuthenticatedApp() {
       if (newStep !== currentStep) {
         setCompletedSteps((prev) => {
           if (!prev.includes(currentStep)) {
-            return [...prev, currentStep];
+            const newCompleted = [...prev, currentStep];
+            return newCompleted;
           }
           return prev;
         });
@@ -181,7 +182,8 @@ function AuthenticatedApp() {
   const stepProgress = useMemo(() => {
     const currentIndex = dialogSteps.indexOf(currentStep);
     const completedCount = completedSteps.length;
-    return ((completedCount + (currentIndex >= 0 ? 0.5 : 0)) / dialogSteps.length) * 100;
+    // Count the current step as 1 (fully in progress) to show accurate progress
+    return ((completedCount + (currentIndex >= 0 ? 1 : 0)) / dialogSteps.length) * 100;
   }, [currentStep, completedSteps]);
 
   const handleDeleteHistory = useCallback(async () => {
@@ -263,15 +265,29 @@ function AuthenticatedApp() {
 
         setMessages((prev) => [...prev, graceMessage]);
 
+        // Log the entire response for debugging
+        console.log('🔍 Full response data:', response.data);
+        console.log('📝 Last response:', lastResponse);
+        console.log('🏷️ Last response metadata:', lastResponse?.metadata);
+        
         if (lastResponse?.metadata?.stage) {
           const stage = lastResponse.metadata.stage;
+          console.log('🎯 Raw stage from backend:', stage);
           const frontendStage = stage.toLowerCase().replace(/\s+/g, '_') as DialogStep;
+          console.log('🔄 Converted frontend stage:', frontendStage);
+          console.log('📋 Available dialog steps:', dialogSteps);
+          console.log('✅ Is valid dialog step?', dialogSteps.includes(frontendStage));
+          
           if (dialogSteps.includes(frontendStage)) {
+            console.log('🚀 Calling handleStepProgress with:', frontendStage);
             handleStepProgress(frontendStage);
           } else {
+            console.log('❌ Stage not recognized, setting stageNotRecognized to true');
             setStageNotRecognized(true);
           }
         } else {
+          console.log('❌ No stage found in metadata, setting stageNotRecognized to true');
+          console.log('🔍 Available metadata keys:', Object.keys(lastResponse?.metadata || {}));
           setStageNotRecognized(true);
         }
       } else {
