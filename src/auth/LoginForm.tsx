@@ -26,28 +26,16 @@ interface LoginFormProps {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLoginSuccess }) => {
   const { login, loading, error, clearError } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
 
   const handleChange = (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: event.target.value
-    }));
-    
-    // Clear validation error when user starts typing
+    setFormData(prev => ({ ...prev, [field]: event.target.value }));
+
     if (validationErrors[field]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [field]: ''
-      }));
+      setValidationErrors(prev => ({ ...prev, [field]: '' }));
     }
-    
-    // Clear auth error when user starts typing
     if (error) {
       clearError();
     }
@@ -72,7 +60,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -83,16 +71,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
     }
   };
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
+  const toggleShowPassword = () => setShowPassword(!showPassword);
 
   return (
-    <Paper 
-      elevation={8} 
-      sx={{ 
-        p: 4, 
-        maxWidth: 400, 
+    <Paper
+      elevation={8}
+      sx={{
+        p: 4,
+        maxWidth: 400,
         width: '100%',
         borderRadius: 3,
         background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.95) 100%)',
@@ -100,11 +86,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
       }}
     >
       <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1" sx={{ 
-          fontWeight: 700, 
-          color: 'primary.main',
-          mb: 1
-        }}>
+        <Typography
+          variant="h4"
+          component="h1"
+          sx={{ fontWeight: 700, color: 'primary.main', mb: 1 }}
+        >
           Welcome Back
         </Typography>
         <Typography variant="body2" color="text.secondary">
@@ -173,12 +159,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
           fullWidth
           variant="contained"
           disabled={loading}
-          sx={{ 
-            mb: 2, 
-            py: 1.5,
-            fontSize: '1.1rem',
-            fontWeight: 600,
-          }}
+          sx={{ mb: 2, py: 1.5, fontSize: '1.1rem', fontWeight: 600 }}
         >
           {loading ? (
             <CircularProgress size={24} color="inherit" />
@@ -187,20 +168,33 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
           )}
         </Button>
 
+        {/* Forgot password button */}
+        <Box sx={{ textAlign: 'center', mb: 1 }}>
+          <Link
+            component="button"
+            type="button"
+            onClick={() => alert('Forgot password clicked')} // replace later
+            sx={{ color: 'primary.main', fontWeight: 600 }}
+          >
+            Forgot password?
+          </Link>
+        </Box>
+
+        {/* Switch to register */}
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link
               component="button"
               type="button"
               onClick={onSwitchToRegister}
-              sx={{ 
+              sx={{
                 fontWeight: 600,
                 textDecoration: 'none',
                 color: 'primary.main',
                 '&:hover': {
                   textDecoration: 'underline',
-                }
+                },
               }}
             >
               Sign up here
@@ -210,4 +204,4 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
       </Box>
     </Paper>
   );
-}; 
+};
