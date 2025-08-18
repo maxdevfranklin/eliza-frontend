@@ -186,7 +186,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
             'Sign In'
           )}
         </Button>
-
+        {/* Forgot password button */}
+        <Box sx={{ textAlign: 'center', mb: 1 }}>
+          <Link
+            component="button"
+            type="button"
+            onClick={() => alert('Forgot password clicked')} // replace later
+            sx={{ color: 'primary.main', fontWeight: 600 }}
+          >
+            Forgot password?
+          </Link>
+        </Box>
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="body2" color="text.secondary">
             Don't have an account?{' '}
