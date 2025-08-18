@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
+import { ForgotPassword } from './ForgotPassword';
 
 interface AuthPageProps {
   onAuthSuccess: () => void;
@@ -14,13 +15,21 @@ interface AuthPageProps {
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [isForgot, setIsForgot] = useState(false);
 
   const switchToRegister = () => {
     setIsLogin(false);
+    setIsForgot(false);
+
   };
 
   const switchToLogin = () => {
     setIsLogin(true);
+    setIsForgot(false);
+
+  };
+  const switchToForgot = () => {
+    setIsForgot(true);
   };
 
   return (
@@ -107,12 +116,19 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         >
           <Fade in={true} timeout={600}>
             <Box>
-              {isLogin ? (
+              {isForgot ? (
+                <Slide direction="left" in={isForgot} timeout={300}>
+                  <Box>
+                    <ForgotPassword onBack={switchToLogin} />
+                  </Box>
+                </Slide>
+              ) : isLogin ? (
                 <Slide direction="right" in={isLogin} timeout={300}>
                   <Box>
                     <LoginForm
                       onSwitchToRegister={switchToRegister}
                       onLoginSuccess={onAuthSuccess}
+                      onForgotPassword={switchToForgot}
                     />
                   </Box>
                 </Slide>
