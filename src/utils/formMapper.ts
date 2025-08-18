@@ -167,7 +167,7 @@ export const mapComprehensiveRecordToForm = (
 
       if (question === "Tell me about your loved one. What does a typical day look like for them?") {
         formData.dailyRoutine = answer;
-      } else if (question === "What are some things they love doing?") {
+      } else if (question === "What does he/she enjoy doing?") {
         formData.enjoysDoing = answer;
       }
     }
@@ -197,6 +197,8 @@ export const mapComprehensiveRecordToForm = (
 
       if (question === "What's most important to you regarding the community you may choose?") {
         formData.mostImportant = answer;
+      } else if (question === "What would make you feel confident that this is the right decision for your family?") {
+        formData.confidenceFactors = answer;
       }
     }
   }
