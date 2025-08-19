@@ -22,9 +22,10 @@ import { useAuth } from './AuthContext';
 interface LoginFormProps {
   onSwitchToRegister: () => void;
   onLoginSuccess: () => void;
+  onForgotPassword?: () => void;
 }
 
-export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLoginSuccess }) => {
+export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLoginSuccess, onForgotPassword }) => {
   const { login, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -191,7 +192,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister, onLogi
           <Link
             component="button"
             type="button"
-            onClick={() => alert('Forgot password clicked')} // replace later
+            onClick={() => (onForgotPassword ? onForgotPassword() : alert('Forgot password clicked'))}// replace later
             sx={{ color: 'primary.main', fontWeight: 600 }}
           >
             Forgot password?
