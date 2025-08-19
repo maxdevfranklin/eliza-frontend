@@ -18,7 +18,7 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
       await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
       // Generic success message avoids account enumeration
       setStatus('sent');
