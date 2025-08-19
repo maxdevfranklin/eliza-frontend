@@ -27,6 +27,11 @@ export interface ComprehensiveRecord {
     answer: string;
     timestamp: string;
   }[];
+  visit_scheduling: {
+    question: string;
+    answer: string;
+    timestamp: string;
+  }[];
   last_updated: string;
 }
 
@@ -112,6 +117,13 @@ export const testFormMapping = () => {
         question: "What would make you feel confident that this is the right decision for your family?",
         answer: "I'm finding clear environment",
         timestamp: "2025-08-14T19:45:13.248Z"
+      }
+    ],
+    visit_scheduling: [
+      {
+        question: "What time would work best for your visit?",
+        answer: "Tuesday 2PM",
+        timestamp: "2025-08-14T19:50:00.000Z"
       }
     ],
     last_updated: "2025-08-14T19:45:14.568Z"

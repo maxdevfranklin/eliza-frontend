@@ -32,6 +32,7 @@ import StepProgressPanel from '../components/progress/StepProgressPanel';
 import StepNotification from '../components/progress/StepNotification';
 import MessageBubble from '../components/chat/MessageBubble';
 import TypingIndicator from '../components/chat/TypingIndicator';
+import CompletionModal from '../components/chat/CompletionModal';
 import AgentModal from '../components/agents/AgentModal';
 import { Message, DialogStep, IntakeForm } from '../types/chat';
 import { dialogSteps, stepLabels } from '../constants/steps';
@@ -73,6 +74,9 @@ function AuthenticatedApp() {
   const [isRecognizingStage, setIsRecognizingStage] = useState(false);
   const [isDeletingHistory, setIsDeletingHistory] = useState(false);
   const [agentModalOpen, setAgentModalOpen] = useState(false);
+  const [completionModalOpen, setCompletionModalOpen] = useState(false);
+  const [visitScheduledTime, setVisitScheduledTime] = useState<string>('');
+  const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
 
@@ -98,6 +102,15 @@ function AuthenticatedApp() {
     referralSource: '',
   });
 
+  // Monitor completion modal state
+  useEffect(() => {
+    console.log('🎯 Completion modal state changed:', {
+      open: completionModalOpen,
+      time: visitScheduledTime,
+      hasShown: hasShownCompletionModal
+    });
+  }, [completionModalOpen, visitScheduledTime, hasShownCompletionModal]);
+
   // Fetch comprehensive record data and populate form
   const fetchAndPopulateForm = useCallback(async () => {
     if (!user?.username) return;
@@ -110,30 +123,54 @@ function AuthenticatedApp() {
 
       const response = await fetchComprehensiveRecord(roomId, userId, agentId);
       
-      
-      
       if (response.success && response.data) {
         const { comprehensiveRecord, visitInfo } = response.data;
         
-        
+        console.log('📊 API Response:', response);
+        console.log('📊 Comprehensive Record:', comprehensiveRecord);
+        console.log('📊 Visit Info:', visitInfo);
         
         // Map the data to form fields
         const formData = mapComprehensiveRecordToForm(comprehensiveRecord, visitInfo);
-        
-        
         
         // Update the form with the fetched data
         setIntakeForm(prev => ({
           ...prev,
           ...formData
         }));
-        
-        
+
+        // Check if visit has been scheduled
+        if (comprehensiveRecord?.visit_scheduling && comprehensiveRecord.visit_scheduling.length > 0) {
+          console.log('🔍 Found visit_scheduling entries:', comprehensiveRecord.visit_scheduling);
+          const visitEntry = comprehensiveRecord.visit_scheduling.find(
+            (entry: { question: string; answer: string; timestamp: string }) => 
+              entry.question === "What time would work best for your visit?"
+          );
+          
+          console.log('🔍 Found visit entry:', visitEntry);
+          
+          if (visitEntry && !hasShownCompletionModal) {
+            console.log('✅ Visit scheduled! Showing completion modal for:', visitEntry.answer);
+            setVisitScheduledTime(visitEntry.answer);
+            setCompletionModalOpen(true);
+            setHasShownCompletionModal(true);
+          } else if (visitEntry && visitEntry.answer.includes('pending confirmation')) {
+            console.log('⏳ Visit time suggested but pending confirmation:', visitEntry.answer);
+          } else {
+            console.log('❌ Visit not ready to show modal:', {
+              hasEntry: !!visitEntry,
+              answer: visitEntry?.answer,
+              hasShown: hasShownCompletionModal
+            });
+          }
+        } else {
+          console.log('❌ No visit_scheduling entries found');
+        }
       }
     } catch (error) {
       console.error('Error fetching comprehensive record:', error);
     }
-  }, [user?.username]);
+  }, [user?.username, hasShownCompletionModal]);
 
 
 
@@ -411,6 +448,16 @@ function AuthenticatedApp() {
             <Button variant="outlined" startIcon={<InfoIcon />} onClick={() => setAgentModalOpen(true)}>
               Agent
             </Button>
+            <Button 
+              variant="outlined" 
+              onClick={() => {
+                setVisitScheduledTime("Test Time");
+                setCompletionModalOpen(true);
+              }}
+              sx={{ ml: 1 }}
+            >
+              Test Modal
+            </Button>
             <IconButton onClick={handleDeleteHistory} disabled={isDeletingHistory} sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }, '&:disabled': { color: '#ccc' } }} title="Delete Conversation History">
               <DeleteIcon />
             </IconButton>
@@ -506,6 +553,16 @@ function AuthenticatedApp() {
 
       <StepNotification stepNotification={stepNotification} />
       <AgentModal open={agentModalOpen} onClose={() => setAgentModalOpen(false)} name="GraceFletcher" />
+      <CompletionModal 
+        open={completionModalOpen} 
+        onClose={() => {
+          setCompletionModalOpen(false);
+          setHasShownCompletionModal(false);
+        }} 
+        selectedTime={visitScheduledTime}
+        userName={intakeForm.name}
+        lovedOneName={intakeForm.familyMemberName}
+      />
     </Box>
   );
 }
