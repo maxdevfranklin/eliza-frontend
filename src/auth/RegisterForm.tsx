@@ -11,6 +11,8 @@ import {
   Link,
   CircularProgress,
   LinearProgress,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import {
   Visibility,
@@ -27,6 +29,10 @@ interface RegisterFormProps {
 }
 
 export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onRegisterSuccess }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
+
   const { register, loading, error, clearError } = useAuth();
   const [formData, setFormData] = useState({
     username: '',
@@ -142,23 +148,24 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
     <Paper 
       elevation={8} 
       sx={{ 
-        p: 4, 
-        maxWidth: 400, 
+        p: { xs: 3, sm: 4 }, 
+        maxWidth: { xs: '100%', sm: 400 }, 
         width: '100%',
-        borderRadius: 3,
+        borderRadius: { xs: 2, sm: 3 },
         background: 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,249,250,0.95) 100%)',
         backdropFilter: 'blur(10px)',
       }}
     >
-      <Box sx={{ textAlign: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1" sx={{ 
+      <Box sx={{ textAlign: 'center', mb: { xs: 2, sm: 3 } }}>
+        <Typography variant={isSmallMobile ? "h5" : "h4"} component="h1" sx={{ 
           fontWeight: 700, 
           color: 'primary.main',
-          mb: 1
+          mb: 1,
+          fontSize: { xs: '1.5rem', sm: '2.125rem' }
         }}>
           Join Us
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
           Create your account to start chatting with Grace
         </Typography>
       </Box>
@@ -179,6 +186,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
           helperText={validationErrors.username}
           disabled={loading}
           sx={{ mb: 2 }}
+          size={isMobile ? "small" : "medium"}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -198,6 +206,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
           helperText={validationErrors.email}
           disabled={loading}
           sx={{ mb: 2 }}
+          size={isMobile ? "small" : "medium"}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -217,6 +226,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
           helperText={validationErrors.password}
           disabled={loading}
           sx={{ mb: 1 }}
+          size={isMobile ? "small" : "medium"}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -229,6 +239,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
                   onClick={toggleShowPassword}
                   edge="end"
                   disabled={loading}
+                  size={isMobile ? "small" : "medium"}
                 >
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
@@ -240,13 +251,16 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
         {formData.password && (
           <Box sx={{ mb: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
                 Password Strength
               </Typography>
               <Typography 
                 variant="caption" 
                 color={`${getPasswordStrengthColor(passwordStrength)}.main`}
-                sx={{ fontWeight: 600 }}
+                sx={{ 
+                  fontWeight: 600,
+                  fontSize: { xs: '0.7rem', sm: '0.75rem' }
+                }}
               >
                 {getPasswordStrengthLabel(passwordStrength)}
               </Typography>
@@ -255,7 +269,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
               variant="determinate" 
               value={passwordStrength} 
               color={getPasswordStrengthColor(passwordStrength)}
-              sx={{ height: 6, borderRadius: 3 }}
+              sx={{ height: { xs: 4, sm: 6 }, borderRadius: 3 }}
             />
           </Box>
         )}
@@ -270,6 +284,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
           helperText={validationErrors.confirmPassword}
           disabled={loading}
           sx={{ mb: 3 }}
+          size={isMobile ? "small" : "medium"}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -282,6 +297,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
                   onClick={toggleShowConfirmPassword}
                   edge="end"
                   disabled={loading}
+                  size={isMobile ? "small" : "medium"}
                 >
                   {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
@@ -295,10 +311,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
           fullWidth
           variant="contained"
           disabled={loading}
+          size={isMobile ? "medium" : "large"}
           sx={{ 
             mb: 2, 
-            py: 1.5,
-            fontSize: '1.1rem',
+            py: { xs: 1, sm: 1.5 },
+            fontSize: { xs: '1rem', sm: '1.1rem' },
             fontWeight: 600,
           }}
         >
@@ -310,7 +327,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
         </Button>
 
         <Box sx={{ textAlign: 'center' }}>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
             Already have an account?{' '}
             <Link
               component="button"
@@ -320,6 +337,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin, onR
                 fontWeight: 600,
                 textDecoration: 'none',
                 color: 'primary.main',
+                fontSize: { xs: '0.8rem', sm: '0.875rem' },
                 '&:hover': {
                   textDecoration: 'underline',
                 }

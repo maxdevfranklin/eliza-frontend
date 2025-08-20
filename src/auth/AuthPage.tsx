@@ -4,6 +4,8 @@ import {
   Container,
   Fade,
   Slide,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
@@ -14,6 +16,10 @@ interface AuthPageProps {
 }
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
+
   const [isLogin, setIsLogin] = useState(true);
   const [isForgot, setIsForgot] = useState(false);
 
@@ -42,6 +48,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         position: 'relative',
         overflow: 'hidden',
+        p: { xs: 2, sm: 0 },
       }}
     >
       {/* Animated background elements */}
@@ -73,9 +80,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
         sx={{
           position: 'absolute',
           top: '10%',
-          right: '10%',
-          width: 100,
-          height: 100,
+          right: { xs: '5%', sm: '10%' },
+          width: { xs: 60, sm: 100 },
+          height: { xs: 60, sm: 100 },
           borderRadius: '50%',
           background: 'rgba(255, 255, 255, 0.1)',
           animation: 'pulse 4s ease-in-out infinite',
@@ -95,27 +102,27 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
       <Box
         sx={{
           position: 'absolute',
-          bottom: '15%',
-          left: '15%',
-          width: 60,
-          height: 60,
+          bottom: { xs: '10%', sm: '15%' },
+          left: { xs: '10%', sm: '15%' },
+          width: { xs: 40, sm: 60 },
+          height: { xs: 40, sm: 60 },
           borderRadius: '50%',
           background: 'rgba(255, 255, 255, 0.08)',
           animation: 'pulse 6s ease-in-out infinite',
         }}
       />
 
-      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1 }}>
+      <Container maxWidth={isSmallMobile ? false : "sm"} sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            minHeight: '80vh',
+            minHeight: { xs: '90vh', sm: '80vh' },
           }}
         >
           <Fade in={true} timeout={600}>
-            <Box>
+            <Box sx={{ width: '100%' }}>
               {isForgot ? (
                 <Slide direction="left" in={isForgot} timeout={300}>
                   <Box>

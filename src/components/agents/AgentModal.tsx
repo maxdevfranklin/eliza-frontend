@@ -10,6 +10,8 @@ import {
   CircularProgress,
   Stack,
   Box,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import axios from 'axios';
 import { getAgentByNameUrl, putAgentByNameUrl } from '../../config/api';
@@ -43,6 +45,10 @@ const editableFields = [
 type EditableField = typeof editableFields[number];
 
 const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -192,9 +198,22 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>Agent: {name}</DialogTitle>
-      <DialogContent dividers>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth={isMobile ? "sm" : "md"} 
+      fullWidth
+      PaperProps={{
+        sx: {
+          margin: { xs: 2, sm: 3 },
+          maxHeight: { xs: 'calc(100vh - 32px)', sm: 'calc(100vh - 48px)' },
+        }
+      }}
+    >
+      <DialogTitle sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
+        Agent: {name}
+      </DialogTitle>
+      <DialogContent dividers sx={{ p: { xs: 2, sm: 3 } }}>
         {loading ? (
           <CircularProgress />
         ) : error ? (
@@ -209,8 +228,8 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
                   src={agent.avatar}
                   alt={`${name} avatar`}
                   sx={{
-                    width: 120,
-                    height: 120,
+                    width: { xs: 80, sm: 120 },
+                    height: { xs: 80, sm: 120 },
                     borderRadius: '50%',
                     objectFit: 'cover',
                     border: '2px solid #e0e0e0',
@@ -220,19 +239,25 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
               </Box>
             )}
             
-            <Box sx={{ display: 'flex', gap: 2 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 2,
+              flexDirection: { xs: 'column', sm: 'row' }
+            }}>
               <TextField
                 label="Enabled"
                 fullWidth
                 value={form.enabled ?? ''}
                 onChange={(e) => handleChange('enabled', e.target.value)}
                 helperText="true/false"
+                size={isMobile ? "small" : "medium"}
               />
               <TextField
                 label="Username"
                 fullWidth
                 value={form.username ?? ''}
                 onChange={(e) => handleChange('username', e.target.value)}
+                size={isMobile ? "small" : "medium"}
               />
             </Box>
             
@@ -241,27 +266,30 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
               label="Action"
               fullWidth
               multiline
-              minRows={4}
+              minRows={isMobile ? 3 : 4}
               value={form.action ?? ''}
               onChange={(e) => handleChange('action', e.target.value)}
               helperText="JSON array of action instructions"
+              size={isMobile ? "small" : "medium"}
             />
             
             <TextField
               label="System"
               fullWidth
               multiline
-              minRows={3}
+              minRows={isMobile ? 2 : 3}
               value={form.system ?? ''}
               onChange={(e) => handleChange('system', e.target.value)}
+              size={isMobile ? "small" : "medium"}
             />
             <TextField
               label="Bio"
               fullWidth
               multiline
-              minRows={3}
+              minRows={isMobile ? 2 : 3}
               value={form.bio ?? ''}
               onChange={(e) => handleChange('bio', e.target.value)}
+              size={isMobile ? "small" : "medium"}
             />
 
             {jsonFields.slice(1).map((field) => (
@@ -270,10 +298,11 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
                 label={field}
                 fullWidth
                 multiline
-                minRows={4}
+                minRows={isMobile ? 3 : 4}
                 value={form[field] ?? ''}
                 onChange={(e) => handleChange(field, e.target.value)}
                 helperText="JSON"
+                size={isMobile ? "small" : "medium"}
               />
             ))}
 
@@ -281,9 +310,16 @@ const AgentModal: React.FC<AgentModalProps> = ({ open, onClose, name }) => {
           </Stack>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Close</Button>
-        <Button onClick={handleSave} disabled={saving} variant="contained">
+      <DialogActions sx={{ p: { xs: 2, sm: 3 } }}>
+        <Button onClick={onClose} size={isMobile ? "medium" : "large"}>
+          Close
+        </Button>
+        <Button 
+          onClick={handleSave} 
+          disabled={saving} 
+          variant="contained"
+          size={isMobile ? "medium" : "large"}
+        >
           {saving ? 'Saving...' : 'Save'}
         </Button>
       </DialogActions>

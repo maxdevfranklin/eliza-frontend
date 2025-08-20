@@ -10,6 +10,7 @@ import {
   Paper,
   IconButton,
   useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import {
   CheckCircle as CheckCircleIcon,
@@ -34,6 +35,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
   lovedOneName,
 }) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('xs'));
 
   const handleVisitWebsite = () => {
     window.open('https://www.grandvillasenior.com/care-levels', '_blank');
@@ -47,11 +50,13 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 3,
+          borderRadius: { xs: 2, sm: 3 },
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: 'white',
           overflow: 'hidden',
           position: 'relative',
+          margin: { xs: 2, sm: 3 },
+          maxHeight: { xs: 'calc(100vh - 32px)', sm: 'calc(100vh - 48px)' },
           '&::before': {
             content: '""',
             position: 'absolute',
@@ -70,8 +75,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
         onClick={onClose}
         sx={{
           position: 'absolute',
-          right: 16,
-          top: 16,
+          right: { xs: 12, sm: 16 },
+          top: { xs: 12, sm: 16 },
           color: 'white',
           zIndex: 1,
           '&:hover': {
@@ -87,8 +92,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
         <Box
           sx={{
             textAlign: 'center',
-            py: 4,
-            px: 3,
+            py: { xs: 3, sm: 4 },
+            px: { xs: 2, sm: 3 },
             background: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}
@@ -106,8 +111,8 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 80,
-                height: 80,
+                width: { xs: 60, sm: 80 },
+                height: { xs: 60, sm: 80 },
                 borderRadius: '50%',
                 background: 'rgba(255, 255, 255, 0.2)',
                 backdropFilter: 'blur(10px)',
@@ -125,12 +130,12 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
                 },
               }}
             >
-              <CheckCircleIcon sx={{ fontSize: 40, color: '#4CAF50' }} />
+              <CheckCircleIcon sx={{ fontSize: { xs: 30, sm: 40 }, color: '#4CAF50' }} />
             </Box>
           </Box>
 
           <Typography
-            variant="h4"
+            variant={isSmallMobile ? "h5" : "h4"}
             component="h2"
             sx={{
               fontWeight: 700,
@@ -139,6 +144,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
               backgroundClip: 'text',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
+              fontSize: { xs: '1.5rem', sm: '2.125rem' }
             }}
           >
             Visit Scheduled! 🎉
@@ -148,7 +154,7 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
             variant="body1"
             sx={{
               opacity: 0.9,
-              fontSize: '1.1rem',
+              fontSize: { xs: '1rem', sm: '1.1rem' },
               fontWeight: 500,
             }}
           >
@@ -157,13 +163,13 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
         </Box>
 
         {/* Content */}
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: { xs: 3, sm: 4 } }}>
           {/* Visit details */}
           <Paper
             elevation={0}
             sx={{
-              p: 3,
-              mb: 3,
+              p: { xs: 2, sm: 3 },
+              mb: { xs: 2, sm: 3 },
               background: 'rgba(255, 255, 255, 0.1)',
               borderRadius: 2,
               border: '1px solid rgba(255, 255, 255, 0.2)',
@@ -172,16 +178,16 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
           >
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <CelebrationIcon sx={{ mr: 1, color: '#FFD700' }} />
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant={isSmallMobile ? "h6" : "h6"} sx={{ fontWeight: 600 }}>
                 Visit Details
               </Typography>
             </Box>
 
-            <Typography variant="body1" sx={{ mb: 2, opacity: 0.9 }}>
+            <Typography variant="body1" sx={{ mb: 2, opacity: 0.9, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               <strong>Time:</strong> {selectedTime || 'Your scheduled time'}
             </Typography>
 
-            <Typography variant="body1" sx={{ opacity: 0.9 }}>
+            <Typography variant="body1" sx={{ opacity: 0.9, fontSize: { xs: '0.9rem', sm: '1rem' } }}>
               {lovedOneName ? (
                 <>
                   We're excited to show you and <strong>{lovedOneName}</strong> around Grand Villa and let you experience what daily life would feel like here.
@@ -198,26 +204,26 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
           <Paper
             elevation={0}
             sx={{
-              p: 3,
-              mb: 3,
+              p: { xs: 2, sm: 3 },
+              mb: { xs: 2, sm: 3 },
               background: 'rgba(255, 255, 255, 0.1)',
               borderRadius: 2,
               border: '1px solid rgba(255, 255, 255, 0.2)',
               backdropFilter: 'blur(10px)',
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 600, mb: 2 }}>
+            <Typography variant={isSmallMobile ? "h6" : "h6"} sx={{ fontWeight: 600, mb: 2 }}>
               What's Next?
             </Typography>
 
             <Box sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+              <Typography variant="body2" sx={{ opacity: 0.9, mb: 1, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 ✓ You'll receive a confirmation email with all the details
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+              <Typography variant="body2" sx={{ opacity: 0.9, mb: 1, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 ✓ Our team will follow up to ensure you have everything you need
               </Typography>
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              <Typography variant="body2" sx={{ opacity: 0.9, fontSize: { xs: '0.8rem', sm: '0.875rem' } }}>
                 ✓ Explore our care levels and amenities to learn more
               </Typography>
             </Box>
@@ -228,9 +234,9 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
             <Typography
               variant="body1"
               sx={{
-                mb: 3,
+                mb: { xs: 2, sm: 3 },
                 opacity: 0.9,
-                fontSize: '1.1rem',
+                fontSize: { xs: '1rem', sm: '1.1rem' },
                 fontWeight: 500,
               }}
             >
@@ -239,16 +245,16 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
 
             <Button
               variant="contained"
-              size="large"
+              size={isMobile ? "medium" : "large"}
               onClick={handleVisitWebsite}
               startIcon={<OpenInNewIcon />}
               sx={{
                 background: 'linear-gradient(45deg, #4CAF50, #45a049)',
                 color: 'white',
-                px: 4,
-                py: 1.5,
+                px: { xs: 3, sm: 4 },
+                py: { xs: 1, sm: 1.5 },
                 borderRadius: 3,
-                fontSize: '1.1rem',
+                fontSize: { xs: '1rem', sm: '1.1rem' },
                 fontWeight: 600,
                 textTransform: 'none',
                 boxShadow: '0 8px 25px rgba(76, 175, 80, 0.3)',
@@ -266,9 +272,10 @@ const CompletionModal: React.FC<CompletionModalProps> = ({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 3, pt: 0 }}>
+      <DialogActions sx={{ p: { xs: 2, sm: 3 }, pt: 0 }}>
         <Button
           onClick={onClose}
+          size={isMobile ? "medium" : "large"}
           sx={{
             color: 'white',
             borderColor: 'rgba(255, 255, 255, 0.3)',

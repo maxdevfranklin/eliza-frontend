@@ -11,20 +11,17 @@ import {
   Avatar,
   Chip,
   Paper,
+  useTheme,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SendIcon from '@mui/icons-material/Send';
-import AttachFileIcon from '@mui/icons-material/AttachFile';
-import EmojiEmotionsIcon from '@mui/icons-material/EmojiEmotions';
 import MicIcon from '@mui/icons-material/Mic';
-import ImageIcon from '@mui/icons-material/Image';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import InfoIcon from '@mui/icons-material/Info';
 import axios from 'axios';
-import { useTheme } from '@mui/material/styles';
 import { useAuth } from '../auth/AuthContext';
 import { getMessageUrl, getAuthUrl, fetchComprehensiveRecord } from '../config/api';
 import Sidebar from '../components/sidebar/Sidebar';
@@ -41,6 +38,8 @@ import { mapComprehensiveRecordToForm, testFormMapping } from '../utils/formMapp
 function AuthenticatedApp() {
   const { user, logout } = useAuth();
   const muiTheme = useTheme();
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
 
   useEffect(() => {
     const originalError = console.error;
@@ -78,7 +77,6 @@ function AuthenticatedApp() {
   const [visitScheduledTime, setVisitScheduledTime] = useState<string>('');
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md'));
 
   const [intakeForm, setIntakeForm] = useState<IntakeForm>({
     name: '',
@@ -387,65 +385,99 @@ function AuthenticatedApp() {
         sx={{
           display: { xs: 'block', md: 'none' },
           '& .MuiDrawer-paper': {
-            width: 420,
+            width: { xs: '100%', sm: 420 },
+            maxWidth: '100vw',
           },
         }}
       >
-        <Sidebar intakeForm={intakeForm} onChange={handleIntakeChange} />
+        <Sidebar 
+          intakeForm={intakeForm} 
+          onChange={handleIntakeChange} 
+          onClose={() => setSidebarOpen(false)}
+        />
       </Drawer>
 
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Box
           sx={{
-            p: 3,
+            p: { xs: 2, sm: 3 },
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.2)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            gap: { xs: 1, sm: 0 },
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 3 }, flex: 1, minWidth: 0 }}>
             {isMobile && (
               <IconButton onClick={() => setSidebarOpen(true)} sx={{ color: '#2d3436' }}>
                 <MenuIcon />
               </IconButton>
             )}
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 3 }, minWidth: 0 }}>
               <Badge
                 overlap="circular"
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
                 badgeContent={<Box sx={{ width: 12, height: 12, borderRadius: '50%', backgroundColor: '#00b894', border: '2px solid white' }} />}
               >
-                <Avatar sx={{ width: 56, height: 56, background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)', boxShadow: '0 8px 32px rgba(255, 107, 157, 0.3)' }}>
-                  <SmartToyIcon sx={{ fontSize: 28 }} />
+                <Avatar sx={{ 
+                  width: { xs: 40, sm: 56 }, 
+                  height: { xs: 40, sm: 56 }, 
+                  background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)', 
+                  boxShadow: '0 8px 32px rgba(255, 107, 157, 0.3)' 
+                }}>
+                  <SmartToyIcon sx={{ fontSize: { xs: 20, sm: 28 } }} />
                 </Avatar>
               </Badge>
 
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: '#2d3436', mb: 0.5 }}>
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant={isSmallMobile ? "h6" : "h5"} sx={{ 
+                  fontWeight: 700, 
+                  color: '#2d3436', 
+                  mb: 0.5,
+                  fontSize: { xs: '1.1rem', sm: '1.5rem' }
+                }}>
                   Grace
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#636e72', fontSize: '0.9rem' }}>
-                  Senior Sherpa • Online
+                <Typography variant="body2" sx={{ 
+                  color: '#636e72', 
+                  fontSize: { xs: '0.8rem', sm: '0.9rem' }
+                }}>
+                   Online •
                 </Typography>
               </Box>
             </Box>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: { xs: 1, sm: 2 },
+            flexWrap: { xs: 'wrap', sm: 'nowrap' },
+            justifyContent: { xs: 'flex-end', sm: 'flex-start' }
+          }}>
             <Chip
               label={stepLabels[currentStep]}
               sx={{
                 background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
                 color: 'white',
                 fontWeight: 600,
-                fontSize: '0.8rem',
+                fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                height: { xs: 24, sm: 32 },
               }}
             />
-            <Button variant="outlined" startIcon={<InfoIcon />} onClick={() => setAgentModalOpen(true)}>
+            {!isSmallMobile && (
+              <>
+                <Button 
+                  variant="outlined" 
+                  startIcon={<InfoIcon />} 
+                  onClick={() => setAgentModalOpen(true)}
+                  size={isMobile ? "small" : "medium"}
+                >
               Agent
             </Button>
             <Button 
@@ -454,19 +486,41 @@ function AuthenticatedApp() {
                 setVisitScheduledTime("Test Time");
                 setCompletionModalOpen(true);
               }}
-              sx={{ ml: 1 }}
+                  size={isMobile ? "small" : "medium"}
             >
               Test Modal
             </Button>
-            <IconButton onClick={handleDeleteHistory} disabled={isDeletingHistory} sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }, '&:disabled': { color: '#ccc' } }} title="Delete Conversation History">
+              </>
+            )}
+            <IconButton 
+              onClick={handleDeleteHistory} 
+              disabled={isDeletingHistory} 
+              sx={{ 
+                color: '#636e72', 
+                '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }, 
+                '&:disabled': { color: '#ccc' } 
+              }} 
+              title="Delete Conversation History"
+              size={isMobile ? "small" : "medium"}
+            >
               <DeleteIcon />
             </IconButton>
-            <IconButton onClick={logout} sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } }} title="Logout">
+            <IconButton 
+              onClick={logout} 
+              sx={{ 
+                color: '#636e72', 
+                '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } 
+              }} 
+              title="Logout"
+              size={isMobile ? "small" : "medium"}
+            >
               <LogoutIcon />
             </IconButton>
-            <IconButton sx={{ color: '#636e72' }}>
+            {!isSmallMobile && (
+              <IconButton sx={{ color: '#636e72' }} size="small">
               <MoreVertIcon />
             </IconButton>
+            )}
           </Box>
         </Box>
 
@@ -474,7 +528,7 @@ function AuthenticatedApp() {
           sx={{
             flex: 1,
             overflow: 'auto',
-            p: 4,
+            p: { xs: 2, sm: 4 },
             background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.95) 100%)',
             backdropFilter: 'blur(20px)',
             '&::-webkit-scrollbar': { width: '8px' },
@@ -490,20 +544,18 @@ function AuthenticatedApp() {
           <div ref={messagesEndRef} />
         </Box>
 
-        <Box sx={{ p: 3, background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(20px)', borderTop: '1px solid rgba(255, 255, 255, 0.2)' }}>
-          <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton size="small" sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } }}>
-                <AttachFileIcon />
-              </IconButton>
-              <IconButton size="small" sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } }}>
-                <ImageIcon />
-              </IconButton>
-              <IconButton size="small" sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } }}>
-                <EmojiEmotionsIcon />
-              </IconButton>
-            </Box>
-
+        <Box sx={{ 
+          p: { xs: 2, sm: 3 }, 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          backdropFilter: 'blur(20px)', 
+          borderTop: '1px solid rgba(255, 255, 255, 0.2)' 
+        }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: { xs: 1, sm: 2 }, 
+            alignItems: 'flex-end',
+            flexDirection: { xs: 'column', sm: 'row' }
+          }}>
             <TextField
               fullWidth
               variant="outlined"
@@ -514,11 +566,25 @@ function AuthenticatedApp() {
               disabled={isLoading}
               multiline
               maxRows={4}
-              sx={{ '& .MuiOutlinedInput-root': { minHeight: '56px', alignItems: 'flex-end', pb: 1.5, fontSize: '1rem' } }}
+              sx={{ 
+                '& .MuiOutlinedInput-root': { 
+                  minHeight: { xs: '48px', sm: '56px' }, 
+                  alignItems: 'flex-end', 
+                  pb: { xs: 1, sm: 1.5 }, 
+                  fontSize: { xs: '0.9rem', sm: '1rem' } 
+                } 
+              }}
             />
 
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              <IconButton sx={{ color: '#636e72', '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1,
+              alignSelf: { xs: 'flex-end', sm: 'stretch' }
+            }}>
+              <IconButton sx={{ 
+                color: '#636e72', 
+                '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' } 
+              }}>
                 <MicIcon />
               </IconButton>
               <Button
@@ -526,8 +592,8 @@ function AuthenticatedApp() {
                 onClick={handleSend}
                 disabled={isLoading || !input.trim()}
                 sx={{
-                  minWidth: '56px',
-                  height: '56px',
+                  minWidth: { xs: '48px', sm: '56px' },
+                  height: { xs: '48px', sm: '56px' },
                   borderRadius: '50%',
                   background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
                   boxShadow: '0 8px 32px rgba(255, 107, 157, 0.3)',

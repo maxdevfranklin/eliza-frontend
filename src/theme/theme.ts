@@ -27,26 +27,62 @@ const theme = createTheme({
     h4: {
       fontWeight: 700,
       letterSpacing: '-0.02em',
+      fontSize: '2.125rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.5rem',
+      },
     },
     h5: {
       fontWeight: 600,
       letterSpacing: '-0.025em',
+      fontSize: '1.5rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.25rem',
+      },
     },
     h6: {
       fontWeight: 600,
       letterSpacing: '-0.01em',
+      fontSize: '1.25rem',
+      '@media (max-width:600px)': {
+        fontSize: '1.1rem',
+      },
     },
     body1: {
       lineHeight: 1.6,
       fontWeight: 400,
+      fontSize: '1rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.9rem',
+      },
+    },
+    body2: {
+      lineHeight: 1.6,
+      fontWeight: 400,
+      fontSize: '0.875rem',
+      '@media (max-width:600px)': {
+        fontSize: '0.8rem',
+      },
     },
     caption: {
       fontSize: '0.75rem',
       fontWeight: 500,
+      '@media (max-width:600px)': {
+        fontSize: '0.7rem',
+      },
     },
   },
   shape: {
     borderRadius: 20,
+  },
+  breakpoints: {
+    values: {
+      xs: 0,
+      sm: 600,
+      md: 960,
+      lg: 1280,
+      xl: 1920,
+    },
   },
   components: {
     MuiButton: {
@@ -57,6 +93,12 @@ const theme = createTheme({
           borderRadius: 25,
           padding: '12px 24px',
           boxShadow: 'none',
+          minHeight: '44px',
+          '@media (max-width:600px)': {
+            padding: '8px 16px',
+            fontSize: '0.9rem',
+            minHeight: '40px',
+          },
           '&:hover': {
             boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
             transform: 'translateY(-2px)',
@@ -72,6 +114,9 @@ const theme = createTheme({
             borderRadius: 25,
             backgroundColor: '#f8f9fa',
             border: 'none',
+            '@media (max-width:600px)': {
+              fontSize: '16px', // Prevent zoom on iOS
+            },
             '&:hover': {
               backgroundColor: '#e9ecef',
             },
@@ -88,6 +133,38 @@ const theme = createTheme({
             '&.Mui-focused fieldset': {
               border: '2px solid #ff6b9d',
             },
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          '@media (max-width:600px)': {
+            padding: '8px',
+            minWidth: '40px',
+            minHeight: '40px',
+          },
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          '@media (max-width:600px)': {
+            margin: '16px',
+            maxWidth: 'calc(100vw - 32px)',
+            maxHeight: 'calc(100vh - 32px)',
+          },
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          '@media (max-width:600px)': {
+            width: '100%',
+            maxWidth: '100vw',
           },
         },
       },

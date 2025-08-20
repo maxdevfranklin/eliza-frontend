@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, LinearProgress, Card, CardContent, Chip } from '@mui/material';
+import { Box, Typography, LinearProgress, Card, CardContent, Chip, useMediaQuery, useTheme } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RadioButtonUncheckedIcon from '@mui/icons-material/RadioButtonUnchecked';
 import { DialogStep } from '../../types/chat';
@@ -12,30 +12,46 @@ interface StepProgressPanelProps {
 }
 
 const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, stepProgressProp }: StepProgressPanelProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   return (
     <Box
       sx={{
-        width: 380,
+        width: { xs: '100%', sm: 380 },
         height: '100%',
         background: 'linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)',
-        borderLeft: '1px solid #e9ecef',
+        borderLeft: { xs: 'none', md: '1px solid #e9ecef' },
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
       }}
     >
-      <Box sx={{ p: 3, borderBottom: '1px solid #e9ecef' }}>
-        <Typography variant="h6" sx={{ fontWeight: 700, color: '#2d3436', mb: 1 }}>
+      <Box sx={{ 
+        p: { xs: 2, sm: 3 }, 
+        borderBottom: '1px solid #e9ecef' 
+      }}>
+        <Typography variant={isSmallMobile ? "h5" : "h6"} sx={{ 
+          fontWeight: 700, 
+          color: '#2d3436', 
+          mb: 1,
+          fontSize: { xs: '1.2rem', sm: '1.25rem' }
+        }}>
           Stage Progress
         </Typography>
-        <Typography variant="body2" sx={{ color: '#636e72', mb: 2 }}>
+        <Typography variant="body2" sx={{ 
+          color: '#636e72', 
+          mb: 2,
+          fontSize: { xs: '0.8rem', sm: '0.875rem' }
+        }}>
           Your personalized discovery journey
         </Typography>
         <LinearProgress
           variant="determinate"
           value={stepProgressProp}
           sx={{
-            height: 8,
+            height: { xs: 6, sm: 8 },
             borderRadius: 4,
             bgcolor: 'rgba(255, 107, 157, 0.1)',
             '& .MuiLinearProgress-bar': {
@@ -44,12 +60,21 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
             },
           }}
         />
-        <Typography variant="caption" sx={{ color: '#636e72', mt: 1, display: 'block' }}>
+        <Typography variant="caption" sx={{ 
+          color: '#636e72', 
+          mt: 1, 
+          display: 'block',
+          fontSize: { xs: '0.7rem', sm: '0.75rem' }
+        }}>
           {Math.round(stepProgressProp)}% Complete
         </Typography>
       </Box>
 
-      <Box sx={{ flex: 1, overflow: 'auto', p: 2 }}>
+      <Box sx={{ 
+        flex: 1, 
+        overflow: 'auto', 
+        p: { xs: 1.5, sm: 2 } 
+      }}>
         {dialogSteps.map((step) => {
           const isCompleted = completedStepsProp.includes(step);
           const isCurrent = currentStepProp === step;
@@ -59,7 +84,7 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
             <Card
               key={step}
               sx={{
-                mb: 2,
+                mb: { xs: 1.5, sm: 2 },
                 background: isCurrent
                   ? 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)'
                   : isCompleted
@@ -100,12 +125,17 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
                 />
               )}
 
-              <CardContent sx={{ p: 3 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+                <Box sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: { xs: 1.5, sm: 2 }, 
+                  mb: 2 
+                }}>
                   <Box
                     sx={{
-                      width: 48,
-                      height: 48,
+                      width: { xs: 40, sm: 48 },
+                      height: { xs: 40, sm: 48 },
                       borderRadius: '50%',
                       background: isCurrent || isCompleted ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 107, 157, 0.1)',
                       display: 'flex',
@@ -115,22 +145,31 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
                     }}
                   >
                     {isCompleted ? (
-                      <CheckCircleIcon sx={{ color: 'inherit', fontSize: 24 }} />
+                      <CheckCircleIcon sx={{ color: 'inherit', fontSize: { xs: 20, sm: 24 } }} />
                     ) : isCurrent ? (
                       <Box sx={{ color: 'inherit' }}>{stepIcons[step]}</Box>
                     ) : (
-                      <RadioButtonUncheckedIcon sx={{ color: '#636e72', fontSize: 24 }} />
+                      <RadioButtonUncheckedIcon sx={{ color: '#636e72', fontSize: { xs: 20, sm: 24 } }} />
                     )}
                   </Box>
 
                   <Box sx={{ flex: 1 }}>
                     <Typography
                       variant="h6"
-                      sx={{ fontWeight: 600, fontSize: '1.1rem', mb: 0.5, color: 'inherit' }}
+                      sx={{ 
+                        fontWeight: 600, 
+                        fontSize: { xs: '1rem', sm: '1.1rem' }, 
+                        mb: 0.5, 
+                        color: 'inherit' 
+                      }}
                     >
                       {stepLabels[step]}
                     </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '0.9rem', color: 'inherit' }}>
+                    <Typography variant="body2" sx={{ 
+                      opacity: 0.8, 
+                      fontSize: { xs: '0.8rem', sm: '0.9rem' }, 
+                      color: 'inherit' 
+                    }}>
                       {stepDescriptions[step]}
                     </Typography>
                   </Box>
@@ -138,8 +177,8 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
                   {isCurrent && (
                     <Box
                       sx={{
-                        width: 12,
-                        height: 12,
+                        width: { xs: 10, sm: 12 },
+                        height: { xs: 10, sm: 12 },
                         borderRadius: '50%',
                         background: 'rgba(255, 255, 255, 0.8)',
                         animation: 'pulse 2s ease-in-out infinite',
@@ -156,7 +195,8 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
                       backgroundColor: 'rgba(255, 255, 255, 0.2)',
                       color: 'inherit',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
+                      fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                      height: { xs: 20, sm: 24 }
                     }}
                   />
                 )}
@@ -169,7 +209,8 @@ const StepProgressPanel = React.memo(({ currentStepProp, completedStepsProp, ste
                       backgroundColor: 'rgba(255, 255, 255, 0.2)',
                       color: 'inherit',
                       fontWeight: 600,
-                      fontSize: '0.75rem',
+                      fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                      height: { xs: 20, sm: 24 }
                     }}
                   />
                 )}
