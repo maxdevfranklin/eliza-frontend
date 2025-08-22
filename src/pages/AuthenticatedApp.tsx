@@ -21,6 +21,7 @@ import SendIcon from '@mui/icons-material/Send';
 import MicIcon from '@mui/icons-material/Mic';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import InfoIcon from '@mui/icons-material/Info';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import axios from 'axios';
 import { useAuth } from '../auth/AuthContext';
 import { getMessageUrl, getAuthUrl, fetchComprehensiveRecord } from '../config/api';
@@ -489,6 +490,14 @@ function AuthenticatedApp() {
                   size={isMobile ? "small" : "medium"}
             >
               Test Modal
+            </Button>
+            <Button 
+              variant="outlined" 
+              startIcon={<AdminPanelSettingsIcon />} 
+              onClick={() => window.location.href = '/admin'}
+              size={isMobile ? "small" : "medium"}
+            >
+              Admin
             </Button>
               </>
             )}

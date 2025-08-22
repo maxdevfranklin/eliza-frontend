@@ -4,12 +4,24 @@ import theme from './theme/theme';
 import { AuthProvider, useAuth } from './auth/AuthContext';
 import { AuthPage } from './auth/AuthPage';
 import AuthenticatedApp from './pages/AuthenticatedApp';
+import AdminPage from './pages/AdminPage';
 
 function AppContent({ onShowAuth, showAuth, onAuthSuccess }: { onShowAuth: () => void; showAuth: boolean; onAuthSuccess: () => void }) {
   const { isAuthenticated } = useAuth();
+  
   if (!isAuthenticated || showAuth) {
     return <AuthPage onAuthSuccess={onAuthSuccess} />;
   }
+  
+  // Check if user is admin (you can customize this logic)
+  const isAdmin = true; // For now, allow all authenticated users to access admin
+  
+  // Simple routing based on URL path
+  const path = window.location.pathname;
+  if (path === '/admin') {
+    return <AdminPage />;
+  }
+  
   return <AuthenticatedApp />;
 }
 

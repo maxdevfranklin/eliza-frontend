@@ -36,6 +36,10 @@ export const getAuthUrl = (endpoint: string) => {
   return `${apiConfig.authBaseUrl}/auth/${endpoint}`;
 };
 
+// Admin endpoints
+export const getAdminUsersUrl = () => `${apiConfig.authBaseUrl}/auth/admin/users`;
+export const getAdminChatHistoryUrl = (username: string) => `${apiConfig.authBaseUrl}/auth/admin/chat-history?username=${username}`;
+
 // Agents endpoints simplified: backend defaults to GraceFletcher when name is omitted
 export const getAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`;
 export const putAgentByNameUrl = () => `${apiConfig.baseUrl}/agents/by-name`;
