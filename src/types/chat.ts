@@ -3,6 +3,12 @@ export interface Message {
   text: string;
   sender: 'user' | 'grace';
   timestamp: Date;
+  metadata?: {
+    responseStatus?: string;
+    stage?: string;
+    askedQuestion?: string;
+    [key: string]: any;
+  };
 }
 
 export type DialogStep =

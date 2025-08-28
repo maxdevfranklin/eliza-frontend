@@ -32,6 +32,7 @@ import MessageBubble from '../components/chat/MessageBubble';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import CompletionModal from '../components/chat/CompletionModal';
 import AgentModal from '../components/agents/AgentModal';
+import TestNotification from '../components/chat/TestNotification';
 import { Message, DialogStep, IntakeForm } from '../types/chat';
 import { dialogSteps, stepLabels } from '../constants/steps';
 import { mapComprehensiveRecordToForm, testFormMapping } from '../utils/formMapper';
@@ -77,6 +78,7 @@ function AuthenticatedApp() {
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
   const [visitScheduledTime, setVisitScheduledTime] = useState<string>('');
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
+  const [showTestNotification, setShowTestNotification] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 
   const [intakeForm, setIntakeForm] = useState<IntakeForm>({
@@ -292,12 +294,26 @@ function AuthenticatedApp() {
       if (response.data && Array.isArray(response.data) && response.data.length > 0) {
         const lastResponse = response.data[response.data.length - 1];
 
+        // Add comprehensive logging for debugging responseStatus
+        console.log('🚀 === FRONTEND RESPONSE PROCESSING ===');
+        console.log('📦 Full response data:', response.data);
+        console.log('📝 Last response object:', lastResponse);
+        console.log('🏷️ Last response metadata:', lastResponse?.metadata);
+        console.log('🔍 ResponseStatus in metadata:', lastResponse?.metadata?.responseStatus);
+        console.log('📊 All metadata keys:', Object.keys(lastResponse?.metadata || {}));
+        console.log('=====================================');
+
         const graceMessage: Message = {
           id: `grace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           text: lastResponse.text || 'Sorry, I encountered an error processing your message.',
           sender: 'grace',
           timestamp: new Date(),
+          metadata: lastResponse.metadata || {},
         };
+
+        console.log('💬 Created grace message:', graceMessage);
+        console.log('🔍 Grace message metadata:', graceMessage.metadata);
+        console.log('🎯 Will show notification?', graceMessage.metadata?.responseStatus === 'Unexpected situation');
 
         setMessages((prev) => [...prev, graceMessage]);
 
@@ -332,6 +348,7 @@ function AuthenticatedApp() {
           text: response.data?.text || 'Sorry, I encountered an error processing your message.',
           sender: 'grace',
           timestamp: new Date(),
+          metadata: response.data?.metadata || {},
         };
         setMessages((prev) => [...prev, graceMessage]);
       }
@@ -399,6 +416,9 @@ function AuthenticatedApp() {
       </Drawer>
 
       <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {showTestNotification && (
+          <TestNotification />
+        )}
         <Box
           sx={{
             p: { xs: 2, sm: 3 },
@@ -490,6 +510,13 @@ function AuthenticatedApp() {
                   size={isMobile ? "small" : "medium"}
             >
               Test Modal
+            </Button>
+            <Button 
+              variant="outlined" 
+              onClick={() => setShowTestNotification(!showTestNotification)}
+                  size={isMobile ? "small" : "medium"}
+            >
+              Test Notification
             </Button>
             <Button 
               variant="outlined" 

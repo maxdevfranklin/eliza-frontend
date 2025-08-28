@@ -1,7 +1,8 @@
 import React from 'react';
-import { Box, Paper, Typography, Avatar, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Paper, Typography, Avatar, useMediaQuery, useTheme, Chip } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
+import WarningIcon from '@mui/icons-material/Warning';
 import { Message } from '../../types/chat';
 
 interface MessageBubbleProps {
@@ -62,6 +63,32 @@ const MessageBubble = React.memo(({ message }: MessageBubbleProps) => {
             backdropFilter: 'blur(10px)',
           }}
         >
+          {/* Unexpected Situation Notification */}
+          {(() => {
+            console.log('🔍 MessageBubble - Message metadata:', message.metadata);
+            console.log('🔍 MessageBubble - ResponseStatus:', message.metadata?.responseStatus);
+            console.log('🔍 MessageBubble - Should show notification?', message.sender === 'grace' && message.metadata?.responseStatus === 'Unexpected situation');
+            return null;
+          })()}
+          {message.sender === 'grace' && message.metadata?.responseStatus === 'Unexpected situation' && (
+            <Box sx={{ mb: 1 }}>
+              <Chip
+                icon={<WarningIcon />}
+                label="Unexpected Situation Detected"
+                size="small"
+                sx={{
+                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.7rem', sm: '0.8rem' },
+                  '& .MuiChip-icon': {
+                    color: 'white',
+                    fontSize: { xs: '0.8rem', sm: '1rem' }
+                  }
+                }}
+              />
+            </Box>
+          )}
           <Typography
             variant="body1"
             sx={{
