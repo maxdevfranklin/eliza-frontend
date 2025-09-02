@@ -32,6 +32,7 @@ const jsonFields = [
   'plugins',
   'settings',
   'style',
+  'grand_info',
 ] as const;
 
 const editableFields = [

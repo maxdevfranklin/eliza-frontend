@@ -21,6 +21,7 @@ import SendIcon from '@mui/icons-material/Send';
 import MicIcon from '@mui/icons-material/Mic';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import InfoIcon from '@mui/icons-material/Info';
+import BusinessIcon from '@mui/icons-material/Business';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import axios from 'axios';
 import { useAuth } from '../auth/AuthContext';
@@ -32,6 +33,7 @@ import MessageBubble from '../components/chat/MessageBubble';
 import TypingIndicator from '../components/chat/TypingIndicator';
 import CompletionModal from '../components/chat/CompletionModal';
 import AgentModal from '../components/agents/AgentModal';
+import CommunityModal from '../components/agents/CommunityModal';
 import TestNotification from '../components/chat/TestNotification';
 import { Message, DialogStep, IntakeForm } from '../types/chat';
 import { dialogSteps, stepLabels } from '../constants/steps';
@@ -75,6 +77,7 @@ function AuthenticatedApp() {
   const [isRecognizingStage, setIsRecognizingStage] = useState(false);
   const [isDeletingHistory, setIsDeletingHistory] = useState(false);
   const [agentModalOpen, setAgentModalOpen] = useState(false);
+  const [communityModalOpen, setCommunityModalOpen] = useState(false);
   const [completionModalOpen, setCompletionModalOpen] = useState(false);
   const [visitScheduledTime, setVisitScheduledTime] = useState<string>('');
   const [hasShownCompletionModal, setHasShownCompletionModal] = useState(false);
@@ -493,15 +496,23 @@ function AuthenticatedApp() {
             />
             {!isSmallMobile && (
               <>
-                <Button 
-                  variant="outlined" 
-                  startIcon={<InfoIcon />} 
-                  onClick={() => setAgentModalOpen(true)}
-                  size={isMobile ? "small" : "medium"}
-                >
+                            <Button 
+              variant="outlined" 
+              startIcon={<InfoIcon />} 
+              onClick={() => setAgentModalOpen(true)}
+              size={isMobile ? "small" : "medium"}
+            >
               Agent
             </Button>
             <Button 
+              variant="outlined" 
+              startIcon={<BusinessIcon />} 
+              onClick={() => setCommunityModalOpen(true)}
+              size={isMobile ? "small" : "medium"}
+            >
+              Community
+            </Button>
+            {/* <Button 
               variant="outlined" 
               onClick={() => {
                 setVisitScheduledTime("Test Time");
@@ -510,14 +521,14 @@ function AuthenticatedApp() {
                   size={isMobile ? "small" : "medium"}
             >
               Test Modal
-            </Button>
-            <Button 
+            </Button> */}
+            {/* <Button 
               variant="outlined" 
               onClick={() => setShowTestNotification(!showTestNotification)}
                   size={isMobile ? "small" : "medium"}
             >
               Test Notification
-            </Button>
+            </Button> */}
             <Button 
               variant="outlined" 
               startIcon={<AdminPanelSettingsIcon />} 
@@ -655,11 +666,13 @@ function AuthenticatedApp() {
 
       <StepNotification stepNotification={stepNotification} />
       <AgentModal open={agentModalOpen} onClose={() => setAgentModalOpen(false)} name="GraceFletcher" />
+      <CommunityModal open={communityModalOpen} onClose={() => setCommunityModalOpen(false)} />
       <CompletionModal 
         open={completionModalOpen} 
         onClose={() => {
           setCompletionModalOpen(false);
-          setHasShownCompletionModal(false);
+          // Don't reset hasShownCompletionModal - once shown, it should stay shown
+          // until the conversation is reset
         }} 
         selectedTime={visitScheduledTime}
         userName={intakeForm.name}
