@@ -24,7 +24,7 @@ export type DialogStep =
 
 export interface IntakeForm {
   name: string;
-  phone: string;
+  location: string;
   familyMemberName: string;
   reasonForCall: string;
   greatestConcern: string;

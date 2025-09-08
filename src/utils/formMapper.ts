@@ -3,7 +3,7 @@ import { IntakeForm } from '../types/chat';
 export interface ComprehensiveRecord {
   contact_info: {
     name?: string;
-    phone?: string;
+    location?: string;
     loved_one_name?: string;
     collected_at: string;
   };
@@ -48,7 +48,7 @@ export const testFormMapping = () => {
     contact_info: {
       collected_at: "2025-08-14T19:31:30.231Z",
       name: "Chris",
-      phone: "281-215-9996",
+      location: "Houston, TX",
       loved_one_name: "Jane"
     },
     situation_discovery: [
@@ -143,7 +143,7 @@ export const mapComprehensiveRecordToForm = (
 
   if (comprehensiveRecord?.contact_info) {
     formData.name = comprehensiveRecord.contact_info.name || '';
-    formData.phone = comprehensiveRecord.contact_info.phone || '';
+    formData.location = comprehensiveRecord.contact_info.location || '';
     formData.familyMemberName = comprehensiveRecord.contact_info.loved_one_name || '';
   }
 

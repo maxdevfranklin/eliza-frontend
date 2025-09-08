@@ -86,7 +86,7 @@ function AuthenticatedApp() {
 
   const [intakeForm, setIntakeForm] = useState<IntakeForm>({
     name: '',
-    phone: '',
+    location: '',
     familyMemberName: '',
     reasonForCall: '',
     greatestConcern: '',

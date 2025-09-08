@@ -69,7 +69,7 @@ export const formSteps: DialogStep[] = [
 ];
 
 export const formStepFieldMap: Record<DialogStep, Array<keyof IntakeForm>> = {
-  trust_building: ['name', 'phone', 'familyMemberName'],
+  trust_building: ['name', 'location', 'familyMemberName'],
   situation_discovery: ['reasonForCall', 'greatestConcern', 'impact', 'currentResidence'],
   lifestyle_discovery: ['dailyRoutine', 'enjoysDoing'],
   readiness_discovery: ['awareLooking', 'feelingsAboutMove', 'othersInvolved'],
@@ -82,7 +82,7 @@ export const formStepFieldMap: Record<DialogStep, Array<keyof IntakeForm>> = {
 
 export const fieldLabels: Record<keyof IntakeForm, string> = {
   name: 'Name',
-  phone: 'Phone number',
+  location: 'Location',
   familyMemberName: "Family member's name",
   reasonForCall: 'What made you decide to call us today?',
   greatestConcern: 'What\'s your greatest concern at this time?',
