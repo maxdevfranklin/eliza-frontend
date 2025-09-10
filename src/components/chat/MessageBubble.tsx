@@ -3,6 +3,7 @@ import { Box, Paper, Typography, Avatar, useMediaQuery, useTheme, Chip } from '@
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import PersonIcon from '@mui/icons-material/Person';
 import WarningIcon from '@mui/icons-material/Warning';
+import InfoIcon from '@mui/icons-material/Info';
 import { Message } from '../../types/chat';
 
 interface MessageBubbleProps {
@@ -71,23 +72,19 @@ const MessageBubble = React.memo(({ message }: MessageBubbleProps) => {
             return null;
           })()}
           {message.sender === 'grace' && message.metadata?.responseStatus === 'Unexpected situation' && (
-            <Box sx={{ mb: 1 }}>
-              <Chip
-                icon={<WarningIcon />}
-                label="Unexpected Situation Detected"
+            <Chip
+                icon={<InfoIcon />}
+                label="New Situation"
                 size="small"
                 sx={{
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: { xs: '0.7rem', sm: '0.8rem' },
-                  '& .MuiChip-icon': {
-                    color: 'white',
-                    fontSize: { xs: '0.8rem', sm: '1rem' }
-                  }
+                    bgcolor: 'rgba(0,184,148,0.1)',
+                    color: '#00b894',
+                    fontWeight: 500,
+                    mb: 1,
+                    alignSelf: message.sender === 'grace' ? 'flex-start' : 'flex-end',
+                    maxWidth: 'max-content',
                 }}
-              />
-            </Box>
+            />
           )}
           <Typography
             variant="body1"
