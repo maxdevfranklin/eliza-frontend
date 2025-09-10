@@ -484,7 +484,7 @@ function AuthenticatedApp() {
             flexWrap: { xs: 'wrap', sm: 'nowrap' },
             justifyContent: { xs: 'flex-end', sm: 'flex-start' }
           }}>
-            <Chip
+            {/* <Chip
               label={stepLabels[currentStep]}
               sx={{
                 background: 'linear-gradient(135deg, #ff6b9d 0%, #6c5ce7 100%)',
@@ -493,7 +493,7 @@ function AuthenticatedApp() {
                 fontSize: { xs: '0.7rem', sm: '0.8rem' },
                 height: { xs: 24, sm: 32 },
               }}
-            />
+            /> */}
             {!isSmallMobile && (
               <>
                             <Button 
