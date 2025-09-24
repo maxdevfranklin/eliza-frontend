@@ -74,7 +74,7 @@ const MessageBubble = React.memo(({ message }: MessageBubbleProps) => {
           {message.sender === 'grace' && message.metadata?.responseStatus === 'Unexpected situation' && (
             <Chip
                 icon={<InfoIcon />}
-                label="New Situation"
+                label="Needs Matching"
                 size="small"
                 sx={{
                     bgcolor: 'rgba(0,184,148,0.1)',
