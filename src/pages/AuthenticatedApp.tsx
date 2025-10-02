@@ -25,7 +25,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import axios from 'axios';
 import { useAuth } from '../auth/AuthContext';
-import { getMessageUrl, getOpenAIMessageUrl, getAuthUrl, fetchComprehensiveRecord } from '../config/api';
+import { getMessageUrl, getOpenAIMessageUrl, getAuthUrl, getSessionResetUrl, fetchComprehensiveRecord } from '../config/api';
 import Sidebar from '../components/sidebar/Sidebar';
 import StepProgressPanel from '../components/progress/StepProgressPanel';
 import StepNotification from '../components/progress/StepNotification';
@@ -227,17 +227,17 @@ function AuthenticatedApp() {
     return ((completedCount + (currentIndex >= 0 ? 1 : 0)) / dialogSteps.length) * 100;
   }, [currentStep, completedSteps]);
 
-  const handleDeleteHistory = useCallback(async () => {
+  const handleSessionReset = useCallback(async () => {
     if (!user?.username || isDeletingHistory) return;
 
-    const confirmDelete = window.confirm('Are you sure you want to delete all conversation history? This action cannot be undone.');
-    if (!confirmDelete) return;
+    const confirmReset = window.confirm('Are you sure you want to reset your session? This will start a fresh conversation.');
+    if (!confirmReset) return;
 
     setIsDeletingHistory(true);
 
     try {
-      const response = await axios.delete(getAuthUrl('delete-history'), {
-        data: { userId: user.username },
+      const response = await axios.post(getSessionResetUrl(), {
+        userId: user.username,
       });
 
       if (response.data.success) {
@@ -253,13 +253,13 @@ function AuthenticatedApp() {
         setCompletedSteps([]);
         setStepNotification(null);
         setStageNotRecognized(false);
-        alert('Conversation history deleted successfully!');
+        alert('Session reset successfully! Starting fresh conversation.');
       } else {
-        throw new Error(response.data.message || 'Failed to delete history');
+        throw new Error(response.data.message || 'Failed to reset session');
       }
     } catch (error) {
-      console.error('Error deleting history:', error);
-      alert('Failed to delete conversation history. Please try again.');
+      console.error('Error resetting session:', error);
+      alert('Failed to reset session. Please try again.');
     } finally {
       setIsDeletingHistory(false);
     }
@@ -540,14 +540,14 @@ function AuthenticatedApp() {
               </>
             )}
             <IconButton 
-              onClick={handleDeleteHistory} 
+              onClick={handleSessionReset} 
               disabled={isDeletingHistory} 
               sx={{ 
                 color: '#636e72', 
                 '&:hover': { color: '#ff6b9d', backgroundColor: 'rgba(255, 107, 157, 0.1)' }, 
                 '&:disabled': { color: '#ccc' } 
               }} 
-              title="Delete Conversation History"
+              title="Reset Session"
               size={isMobile ? "small" : "medium"}
             >
               <DeleteIcon />

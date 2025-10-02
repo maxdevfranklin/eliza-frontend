@@ -1,5 +1,5 @@
 // API Configuration based on environment
-const LAUNCH_MODE = process.env.REACT_APP_LAUNCH_MODE || 'DEVELOPEMENT_URL';
+const LAUNCH_MODE = process.env.REACT_APP_LAUNCH_MODE || 'DEVELOPMENT_LOCAL';
 
 interface ApiConfig {
   baseUrl: string;
@@ -39,6 +39,11 @@ export const getOpenAIMessageUrl = () => {
 // Helper function to get auth URLs
 export const getAuthUrl = (endpoint: string) => {
   return `${apiConfig.authBaseUrl}/auth/${endpoint}`;
+};
+
+// Session reset endpoint
+export const getSessionResetUrl = () => {
+  return `${apiConfig.authBaseUrl}/auth/session-reset`;
 };
 
 // Admin endpoints
