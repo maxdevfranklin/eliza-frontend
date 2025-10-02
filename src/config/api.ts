@@ -31,6 +31,11 @@ export const getMessageUrl = (agentId: string = '01c95267-dd29-02bc-a9ad-d243b05
   return `${apiConfig.baseUrl}/${agentId}/message`;
 };
 
+// Helper function to get the new OpenAI direct message endpoint
+export const getOpenAIMessageUrl = () => {
+  return `${apiConfig.baseUrl}/message`;
+};
+
 // Helper function to get auth URLs
 export const getAuthUrl = (endpoint: string) => {
   return `${apiConfig.authBaseUrl}/auth/${endpoint}`;

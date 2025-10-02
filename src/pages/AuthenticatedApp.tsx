@@ -25,7 +25,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import axios from 'axios';
 import { useAuth } from '../auth/AuthContext';
-import { getMessageUrl, getAuthUrl, fetchComprehensiveRecord } from '../config/api';
+import { getMessageUrl, getOpenAIMessageUrl, getAuthUrl, fetchComprehensiveRecord } from '../config/api';
 import Sidebar from '../components/sidebar/Sidebar';
 import StepProgressPanel from '../components/progress/StepProgressPanel';
 import StepNotification from '../components/progress/StepNotification';
@@ -286,7 +286,7 @@ function AuthenticatedApp() {
     setIsRecognizingStage(true);
 
     try {
-      const response = await axios.post(getMessageUrl(), {
+      const response = await axios.post(getOpenAIMessageUrl(), {
         text: currentInput,
         userId: user?.username || 'User',
         userName: user?.username || 'User',
